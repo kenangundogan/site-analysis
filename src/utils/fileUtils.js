@@ -50,7 +50,7 @@ const getAllScans = () => {
                 baseurl: data.baseurl,
                 totalLinks: data.totalLinks,
                 response: data.response,
-                reportLink: `${config.serverUrl}:${config.port}/scan-report/${scanId}`,
+                reportLink: `${config.serverUrl}:${config.port}/scans/${scanId}`,
                 date: {
                     start: startDate,
                     end: endDate,

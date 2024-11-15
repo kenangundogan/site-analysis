@@ -1,10 +1,19 @@
 import { Router } from 'express';
 import scanController from '../controllers/scanController.js';
+import apiController from '../controllers/apiController.js';
 
 const router = Router();
 
-router.get('/', scanController.startScan);
+// API bilgilendirme endpoint'i
+router.get('/', apiController.getApiInfo);
+
+// Tüm taramaları listeleme
 router.get('/scans', scanController.getScans);
-router.get('/scan-report/:scanId', scanController.getScanReport);
+
+// Yeni bir tarama başlatma
+router.post('/scans', scanController.startScan);
+
+// Belirli bir tarama raporunu alma
+router.get('/scans/:scanId', scanController.getScanReport);
 
 export default router;
