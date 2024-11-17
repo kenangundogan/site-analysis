@@ -46,20 +46,24 @@ const startScan = async (req, res, next) => {
     }
 };
 
-const getScans = (req, res, next) => {
+const getScans = async (req, res, next) => {
     try {
-        const scans = scanService.getScans();
+        const scans = await scanService.getScans();
+        console.log('getScans fonksiyonu çağrıldı. Bulunan taramalar:', scans);
         res.json(scans);
     } catch (error) {
+        console.error('getScans fonksiyonunda hata:', error);
         next(error);
     }
 };
 
-const getScanReport = (req, res, next) => {
+const getScanReport = async (req, res, next) => {
     try {
-        const report = scanService.getScanReport(req.params.scanId);
+        const { scanId } = req.params;
+        const report = await scanService.getScanReport(scanId);
         res.json(report);
     } catch (error) {
+        console.error('getScanReport fonksiyonunda hata:', error);
         next(error);
     }
 };

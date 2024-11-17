@@ -14,7 +14,6 @@ const getApiInfo = (req, res) => {
                     { name: 'header', type: 'string', description: 'Kullanılacak header tipi (mobile, desktop, tablet, random)' },
                     { name: 'content', type: 'boolean', description: 'Sayfa içeriğini almak için' },
                     { name: 'headMeta', type: 'boolean', description: 'Meta etiketlerini almak için' },
-                    // Diğer opsiyonel parametreler...
                 ],
                 exampleRequest: {
                     method: 'POST',

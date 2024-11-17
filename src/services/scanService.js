@@ -1,24 +1,27 @@
 import axios from 'axios';
 import { v4 as uuidv4 } from 'uuid';
-import fileUtils from '../utils/fileUtils.js';
+import Scan from '../models/scan.js';
+import Link from '../models/link.js';
 import linkUtils from '../utils/linkUtils.js';
-import config from '../config/index.js';
 
 const startScan = async (params) => {
-    const { url, baseurl, header, ...options } = params;
+    const { url, baseurl, header: headerType, ...options } = params;
 
     if (!url || !baseurl) {
         throw new Error('URL ve baseurl parametreleri zorunludur.');
     }
 
-    const scanId = `${new Date().toISOString().replace(/[:.]/g, '-')}-${uuidv4()}`;
-    const fileName = fileUtils.generateFileName(scanId);
+    const scanUuid = uuidv4();
 
-    // Sonuçlar dizini oluşturulur
-    fileUtils.createResultsDir();
+    // Yeni tarama kaydı oluştur
+    const newScan = new Scan({
+        uuid: scanUuid,
+        url,
+        baseurl,
+        options,
+    });
 
-    // Başlangıçta kullanıcıya dönüş yap
-    const responseMessage = { message: 'Tarama başlatıldı.', scanId };
+    await newScan.save();
 
     // Asenkron işlemleri arka planda çalıştır
     (async () => {
@@ -26,32 +29,53 @@ const startScan = async (params) => {
             const mainResponse = await axios.get(url);
             const links = linkUtils.extractLinks(mainResponse.data, baseurl);
 
-            linkUtils.initializeFileWithLinks(links, fileName, url, baseurl);
+            // Her bir link için Link modeli oluştur ve kaydet
+            for (const link of links) {
+                const linkData = {
+                    scanUuid,
+                    url: link.url,
+                    alt: link.alt,
+                    statusCode: null,
+                    statusMessage: null,
+                    headerInfo: null,
+                };
+                const newLink = new Link(linkData);
+                await newLink.save();
+            }
 
+            // İstekler paralel olarak yapılabilir
             await Promise.all(
-                links.map((link) =>
-                    linkUtils.fetchLinkStatusAndUpdateFile(link, fileName, options, header),
-                ),
+                links.map(async (link) => {
+                    await linkUtils.fetchLinkStatusAndUpdateDB(link, scanUuid, options, headerType);
+                }),
             );
+
+            // Tarama tamamlandı, güncelle
+            await Scan.updateOne({ uuid: scanUuid }, { status: 'completed', endDate: new Date() });
         } catch (error) {
             console.error(`Tarama sırasında hata oluştu: ${error.message}`);
+            await Scan.updateOne({ uuid: scanUuid }, { status: 'error', endDate: new Date() });
         }
     })();
 
-    return responseMessage;
+    return { message: 'Tarama başlatıldı.', scanId: scanUuid };
 };
 
-const getScans = () => {
-    const scans = fileUtils.getAllScans();
+const getScans = async () => {
+    const scans = await Scan.find().sort({ startDate: -1 });
     return scans;
 };
 
-const getScanReport = (scanId) => {
-    const report = fileUtils.getScanReport(scanId);
-    if (!report) {
-        throw new Error('Geçersiz veya mevcut olmayan bir tarama ID\'si.');
+const getScanReport = async (scanUuid) => {
+    const scan = await Scan.findOne({ uuid: scanUuid });
+    if (!scan) {
+        throw new Error('Belirtilen scanId ile eşleşen bir tarama bulunamadı.');
     }
-    return report;
+    const links = await Link.find({ scanUuid });
+    return {
+        scan,
+        links,
+    };
 };
 
 export default {
