@@ -34,7 +34,6 @@ const startScan = async (params) => {
                 const linkData = {
                     scanUuid,
                     url: link.url,
-                    alt: link.alt,
                     statusCode: null,
                     statusMessage: null,
                     headerInfo: null,

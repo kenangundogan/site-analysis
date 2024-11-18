@@ -15,8 +15,19 @@ const fetchLinkStatusAndUpdateDB = async (link, scanUuid, options, headerType) =
         const response = await axios.get(link.url, {
             headers,
             validateStatus: () => true, // Tüm durum kodlarını başarılı kabul et
+            responseType: 'text', // Yanıtı metin olarak al
         });
         const endTime = new Date();
+
+        // response.headers'ı serileştir
+        const sanitizedHeaders = {};
+        for (const [key, value] of Object.entries(response.headers)) {
+            try {
+                sanitizedHeaders[key] = typeof value === 'string' ? value : JSON.stringify(value);
+            } catch (e) {
+                sanitizedHeaders[key] = '';
+            }
+        }
 
         // Link bilgisini güncelle
         await Link.updateOne(
@@ -32,7 +43,7 @@ const fetchLinkStatusAndUpdateDB = async (link, scanUuid, options, headerType) =
                     headerId: headerData.headerId,
                     headersUsed: headers,
                 },
-                response: options.headers ? response.headers : undefined,
+                response: options.headers ? sanitizedHeaders : undefined,
                 // Diğer opsiyonel verileri ekleyebilirsiniz
             },
         );
@@ -72,7 +83,6 @@ const extractLinks = (html, baseUrl) => {
     return links
         .map((link) => {
             const href = link.getAttribute('href');
-            const alt = link.textContent.trim();
             if (href && !href.startsWith('#') && !href.startsWith('javascript')) {
                 try {
                     // Href'i mutlak bir URL'ye dönüştürüyoruz
@@ -85,7 +95,6 @@ const extractLinks = (html, baseUrl) => {
                         if (!uniqueUrls.has(absoluteUrl)) {
                             uniqueUrls.add(absoluteUrl);
                             return {
-                                alt,
                                 url: absoluteUrl,
                             };
                         }

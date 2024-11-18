@@ -3,7 +3,6 @@ import mongoose from 'mongoose';
 const linkSchema = new mongoose.Schema({
     scanUuid: { type: String, required: true },
     url: { type: String, required: true },
-    alt: { type: String },
     statusCode: { type: Number },
     statusMessage: { type: String },
     startDate: { type: Date },
