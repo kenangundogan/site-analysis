@@ -37,7 +37,7 @@ const startScan = async (req, res, next) => {
             jsFiles,
             cssFiles,
             tracking,
-            metaOptions: {
+            metaTags: {
                 ogTags,
                 twitterTags,
                 allMeta,

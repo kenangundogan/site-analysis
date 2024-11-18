@@ -34,9 +34,8 @@ const fetchLinkStatusAndUpdateDB = async (link, scanUuid, options, headerType) =
 
         // Meta verileri çıkar
         let metaData = {};
-        console.log('options.metaOptions', options.metaOptions);
-        if (options.metaOptions) {
-            metaData = metaUtils.extractMetaTags(html, options.metaOptions);
+        if (options.metaTags) {
+            metaData = metaUtils.extractMetaTags(html, options.metaTags);
         }
 
 
