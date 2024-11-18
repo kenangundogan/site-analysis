@@ -14,6 +14,16 @@ const getApiInfo = (req, res) => {
                     { name: 'header', type: 'string', description: 'Kullanılacak header tipi (mobile, desktop, tablet, random)' },
                     { name: 'content', type: 'boolean', description: 'Sayfa içeriğini almak için' },
                     { name: 'headMeta', type: 'boolean', description: 'Meta etiketlerini almak için' },
+                    { name: 'headLink', type: 'boolean', description: 'Link etiketlerini almak için' },
+                    { name: 'heading', type: 'boolean', description: 'Başlık etiketlerini (h1, h2, h3) almak için' },
+                    { name: 'headers', type: 'boolean', description: 'HTTP yanıt başlıklarını almak için' },
+                    { name: 'structuredData', type: 'boolean', description: 'Yapılandırılmış verileri almak için' },
+                    { name: 'jsFiles', type: 'boolean', description: 'JavaScript dosyalarını almak için' },
+                    { name: 'cssFiles', type: 'boolean', description: 'CSS dosyalarını almak için' },
+                    { name: 'tracking', type: 'boolean', description: 'İzleme kodlarını almak için' },
+                    { name: 'ogTags', type: 'boolean', description: 'Open Graph etiketlerini almak için' },
+                    { name: 'twitterTags', type: 'boolean', description: 'Twitter kartı etiketlerini almak için' },
+                    { name: 'allMeta', type: 'boolean', description: 'Tüm meta etiketlerini almak için' },
                 ],
                 exampleRequest: {
                     method: 'POST',
@@ -23,7 +33,10 @@ const getApiInfo = (req, res) => {
                         "baseurl": "https://example.com",
                         "header": "mobile",
                         "content": true,
-                        "headMeta": true
+                        "headMeta": true,
+                        "ogTags": true,
+                        "twitterTags": true,
+                        "allMeta": false
                     }
                 }
             },
