@@ -2,6 +2,7 @@ import axios from 'axios';
 import { JSDOM } from 'jsdom';
 import Link from '../models/link.js';
 import getRandomHeader from './headerSelector.js';
+import metaUtils from './metaUtils.js';
 
 const fetchLinkStatusAndUpdateDB = async (link, scanUuid, options, headerType) => {
     const startTime = new Date();
@@ -28,6 +29,17 @@ const fetchLinkStatusAndUpdateDB = async (link, scanUuid, options, headerType) =
             }
         }
 
+        // HTML içeriğini al
+        const html = response.data;
+
+        // Meta verileri çıkar
+        let metaData = {};
+        console.log('options.metaOptions', options.metaOptions);
+        if (options.metaOptions) {
+            metaData = metaUtils.extractMetaTags(html, options.metaOptions);
+        }
+
+
         // Link bilgisini güncelle
         await Link.updateOne(
             { scanUuid, url: link.url },
@@ -43,6 +55,7 @@ const fetchLinkStatusAndUpdateDB = async (link, scanUuid, options, headerType) =
                     headersUsed: headers,
                 },
                 response: options.headers ? sanitizedHeaders : undefined,
+                metaData: Object.keys(metaData).length > 0 ? metaData : undefined,
                 // Diğer opsiyonel verileri ekleyebilirsiniz
             },
         );
@@ -80,12 +93,10 @@ const extractLinks = (html, baseUrl) => {
     return links
         .map((link) => {
             const href = link.getAttribute('href');
-            const alt = link.textContent.trim();
             const fullUrl = href.startsWith('/') ? `${baseUrl}${href}` : href;
             if (href && !href.startsWith('#') && !href.startsWith('javascript') && !uniqueUrls.has(fullUrl)) {
                 uniqueUrls.add(fullUrl);
                 return {
-                    alt,
                     url: fullUrl,
                 };
             }

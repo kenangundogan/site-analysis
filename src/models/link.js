@@ -10,6 +10,7 @@ const linkSchema = new mongoose.Schema({
     duration: { type: Number },
     response: { type: Object },
     headerInfo: { type: Object },
+    metaData: { type: Object, default: {} },
 });
 
 export default mongoose.model('Link', linkSchema);
