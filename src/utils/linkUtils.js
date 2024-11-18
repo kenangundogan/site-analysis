@@ -3,6 +3,7 @@ import { JSDOM } from 'jsdom';
 import Link from '../models/link.js';
 import getRandomHeader from './headerSelector.js';
 import metaUtils from './metaUtils.js';
+import MetaTag from '../models/metaTag.js';
 
 const fetchLinkStatusAndUpdateDB = async (link, scanUuid, options, headerType) => {
     const startTime = new Date();
@@ -29,35 +30,48 @@ const fetchLinkStatusAndUpdateDB = async (link, scanUuid, options, headerType) =
             }
         }
 
+        // Link bilgisini güncelle veya oluştur
+        const linkUpdate = {
+            statusCode: response.status,
+            statusMessage: response.statusText,
+            startDate: startTime,
+            endDate: endTime,
+            duration: (endTime - startTime) / 1000,
+            headerInfo: {
+                headerType: headerData.headerType || 'default',
+                headerId: headerData.headerId,
+                headersUsed: headers,
+            },
+            response: options.headers ? sanitizedHeaders : undefined,
+        };
+
+        const updatedLink = await Link.findOneAndUpdate(
+            { scanUuid, url: link.url },
+            linkUpdate,
+            { upsert: true, new: true }
+        );
+
         // HTML içeriğini al
         const html = response.data;
+        const dom = new JSDOM(html);
+        const document = dom.window.document;
 
-        // Meta verileri çıkar
-        let metaData = {};
-        if (options.metaTags) {
-            metaData = metaUtils.extractMetaTags(html, options.metaTags);
+        // Meta verileri çıkar ve ayrı koleksiyona kaydet
+        if (options.headMeta) {
+            const metaTags = metaUtils.extractMetaTags(document);
+
+            if (metaTags.length > 0) {
+                // MetaTag belgelerini oluştur
+                const metaTagDocuments = metaTags.map((attributes) => ({
+                    scanUuid,
+                    linkId: updatedLink._id, // Link belgesinin id'si
+                    attributes,
+                }));
+
+                // MetaTag koleksiyonuna ekle
+                await MetaTag.insertMany(metaTagDocuments);
+            }
         }
-
-
-        // Link bilgisini güncelle
-        await Link.updateOne(
-            { scanUuid, url: link.url },
-            {
-                statusCode: response.status,
-                statusMessage: response.statusText,
-                startDate: startTime,
-                endDate: endTime,
-                duration: (endTime - startTime) / 1000,
-                headerInfo: {
-                    headerType: headerData.headerType || 'default',
-                    headerId: headerData.headerId,
-                    headersUsed: headers,
-                },
-                response: options.headers ? sanitizedHeaders : undefined,
-                metaData: Object.keys(metaData).length > 0 ? metaData : undefined,
-                // Diğer opsiyonel verileri ekleyebilirsiniz
-            },
-        );
     } catch (error) {
         const endTime = new Date();
 
@@ -65,21 +79,27 @@ const fetchLinkStatusAndUpdateDB = async (link, scanUuid, options, headerType) =
         const statusCode = error.response ? error.response.status : null;
         const statusMessage = error.response ? error.response.statusText : error.message;
 
-        await Link.updateOne(
-            { scanUuid, url: link.url },
-            {
-                statusCode,
-                statusMessage,
-                startDate: startTime,
-                endDate: endTime,
-                duration: (endTime - startTime) / 1000,
-                headerInfo: {
-                    headerType: headerData.headerType || 'default',
-                    headerId: headerData.headerId,
-                    headersUsed: headers,
-                },
+        // Link bilgisini güncelle veya oluştur
+        const linkUpdate = {
+            statusCode,
+            statusMessage,
+            startDate: startTime,
+            endDate: endTime,
+            duration: (endTime - startTime) / 1000,
+            headerInfo: {
+                headerType: headerData.headerType || 'default',
+                headerId: headerData.headerId,
+                headersUsed: headers,
             },
+        };
+
+        const updatedLink = await Link.findOneAndUpdate(
+            { scanUuid, url: link.url },
+            linkUpdate,
+            { upsert: true, new: true }
         );
+        
+        // Hata oluştuğu için meta verileri işlenmeyecek
     }
 };
 

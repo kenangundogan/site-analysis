@@ -15,9 +15,6 @@ const startScan = async (req, res, next) => {
             jsFiles = false,
             cssFiles = false,
             tracking = false,
-            ogTags = false,
-            twitterTags = false,
-            allMeta = false,
         } = req.body;
 
         // Gerekli parametrelerin kontrolü
@@ -37,11 +34,6 @@ const startScan = async (req, res, next) => {
             jsFiles,
             cssFiles,
             tracking,
-            metaTags: {
-                ogTags,
-                twitterTags,
-                allMeta,
-            },
         };
 
         const validHeaders = ['mobile', 'desktop', 'tablet', 'random'];
