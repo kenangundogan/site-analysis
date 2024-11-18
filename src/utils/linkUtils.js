@@ -2,7 +2,6 @@ import axios from 'axios';
 import { JSDOM } from 'jsdom';
 import Link from '../models/link.js';
 import getRandomHeader from './headerSelector.js';
-import { URL } from 'url';
 
 const fetchLinkStatusAndUpdateDB = async (link, scanUuid, options, headerType) => {
     const startTime = new Date();
@@ -76,37 +75,22 @@ const extractLinks = (html, baseUrl) => {
     const dom = new JSDOM(html);
     const document = dom.window.document;
     const links = Array.from(document.querySelectorAll('a'));
-
-    const uniqueUrls = new Set(); // Benzersiz URL'leri takip etmek için Set kullanıyoruz
-    const baseDomain = new URL(baseUrl).hostname; // Temel alan adını alıyoruz
+    const uniqueUrls = new Set();
 
     return links
         .map((link) => {
             const href = link.getAttribute('href');
-            if (href && !href.startsWith('#') && !href.startsWith('javascript')) {
-                try {
-                    // Href'i mutlak bir URL'ye dönüştürüyoruz
-                    const absoluteUrl = new URL(href, baseUrl).href;
-                    const urlDomain = new URL(absoluteUrl).hostname;
-
-                    // Sadece iç URL'leri ekliyoruz
-                    if (urlDomain === baseDomain) {
-                        // Benzersizliği kontrol ediyoruz
-                        if (!uniqueUrls.has(absoluteUrl)) {
-                            uniqueUrls.add(absoluteUrl);
-                            return {
-                                url: absoluteUrl,
-                            };
-                        }
-                    }
-                } catch (e) {
-                    // Geçersiz URL durumunda hiçbir şey yapmıyoruz
-                    return null;
-                }
+            const alt = link.textContent.trim();
+            const fullUrl = href.startsWith('/') ? `${baseUrl}${href}` : href;
+            if (href && !href.startsWith('#') && !href.startsWith('javascript') && !uniqueUrls.has(fullUrl)) {
+                uniqueUrls.add(fullUrl);
+                return {
+                    alt,
+                    url: fullUrl,
+                };
             }
-            return null;
         })
-        .filter((link) => link !== null); // Null olmayan değerleri alıyoruz
+        .filter((link) => link);
 };
 
 export default {
