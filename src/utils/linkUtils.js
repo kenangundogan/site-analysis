@@ -3,9 +3,7 @@ import { JSDOM } from 'jsdom';
 import Link from '../models/link.js';
 import getRandomHeader from './headerSelector.js';
 import metaUtils from './metaUtils.js';
-import MetaTag from '../models/metaTag.js';
 import headersUtils from './headersUtils.js';
-import Headers from '../models/headers.js';
 
 const fetchLinkStatusAndUpdateDB = async (link, scanId, options, headerType) => {
     const startTime = new Date();
@@ -44,37 +42,16 @@ const fetchLinkStatusAndUpdateDB = async (link, scanId, options, headerType) => 
         );
 
         // Header bilgilerini ayrı koleksiyona kaydet
-
         if (options.headers) {
-            const extractedHeaders = headersUtils.extractHeaders(response.headers);
-
-            // Headers belgesi oluştur
-            const headersDocument = new Headers({
-                scanId,
-                linkId: updatedLink._id,
-                headers: extractedHeaders
-            });
-
-            await headersDocument.save();
+            await headersUtils.processHeaders(response.headers, scanId, updatedLink._id);
         }
 
         // HTML içeriğini al
         const html = response.data;
-        const dom = new JSDOM(html);
-        const document = dom.window.document;
 
         // Meta verileri çıkar ve ayrı koleksiyona kaydet
         if (options.headMeta) {
-            const metaTags = metaUtils.extractMetaTags(document);
-
-            if (metaTags.length > 0) {
-                // MetaTag belgesini oluştur veya güncelle
-                await MetaTag.findOneAndUpdate(
-                    { scanId, linkId: updatedLink._id },
-                    { attributes: metaTags },
-                    { upsert: true, new: true }
-                );
-            }
+            await metaUtils.processMetaTags(html, scanId, updatedLink._id);
         }
     } catch (error) {
         const endTime = new Date();
