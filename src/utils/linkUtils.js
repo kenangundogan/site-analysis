@@ -4,8 +4,10 @@ import Link from '../models/link.js';
 import getRandomHeader from './headerSelector.js';
 import metaUtils from './metaUtils.js';
 import MetaTag from '../models/metaTag.js';
+import headersUtils from './headersUtils.js';
+import Headers from '../models/headers.js';
 
-const fetchLinkStatusAndUpdateDB = async (link, scanUuid, options, headerType) => {
+const fetchLinkStatusAndUpdateDB = async (link, scanId, options, headerType) => {
     const startTime = new Date();
 
     // Her link için rastgele bir header seç
@@ -20,18 +22,9 @@ const fetchLinkStatusAndUpdateDB = async (link, scanUuid, options, headerType) =
         });
         const endTime = new Date();
 
-        // response.headers'ı serileştir
-        const sanitizedHeaders = {};
-        for (const [key, value] of Object.entries(response.headers)) {
-            try {
-                sanitizedHeaders[key] = typeof value === 'string' ? value : JSON.stringify(value);
-            } catch (e) {
-                sanitizedHeaders[key] = '';
-            }
-        }
-
         // Link bilgisini güncelle veya oluştur
         const linkUpdate = {
+            scanId,
             statusCode: response.status,
             statusMessage: response.statusText,
             startDate: startTime,
@@ -41,15 +34,29 @@ const fetchLinkStatusAndUpdateDB = async (link, scanUuid, options, headerType) =
                 headerType: headerData.headerType || 'default',
                 headerId: headerData.headerId,
                 headersUsed: headers,
-            },
-            response: options.headers ? sanitizedHeaders : undefined,
+            }
         };
 
         const updatedLink = await Link.findOneAndUpdate(
-            { scanUuid, url: link.url },
+            { scanId, url: link.url },
             linkUpdate,
             { upsert: true, new: true }
         );
+
+        // Header bilgilerini ayrı koleksiyona kaydet
+
+        if (options.headers) {
+            const extractedHeaders = headersUtils.extractHeaders(response.headers);
+
+            // Headers belgesi oluştur
+            const headersDocument = new Headers({
+                scanId,
+                linkId: updatedLink._id,
+                headers: extractedHeaders
+            });
+
+            await headersDocument.save();
+        }
 
         // HTML içeriğini al
         const html = response.data;
@@ -63,8 +70,8 @@ const fetchLinkStatusAndUpdateDB = async (link, scanUuid, options, headerType) =
             if (metaTags.length > 0) {
                 // MetaTag belgelerini oluştur
                 const metaTagDocuments = metaTags.map((attributes) => ({
-                    scanUuid,
-                    linkId: updatedLink._id, // Link belgesinin id'si
+                    scanId,
+                    linkId: updatedLink._id,
                     attributes,
                 }));
 
@@ -81,6 +88,7 @@ const fetchLinkStatusAndUpdateDB = async (link, scanUuid, options, headerType) =
 
         // Link bilgisini güncelle veya oluştur
         const linkUpdate = {
+            scanId,
             statusCode,
             statusMessage,
             startDate: startTime,
@@ -93,12 +101,12 @@ const fetchLinkStatusAndUpdateDB = async (link, scanUuid, options, headerType) =
             },
         };
 
-        const updatedLink = await Link.findOneAndUpdate(
-            { scanUuid, url: link.url },
+        await Link.findOneAndUpdate(
+            { scanId, url: link.url },
             linkUpdate,
             { upsert: true, new: true }
         );
-        
+
         // Hata oluştuğu için meta verileri işlenmeyecek
     }
 };

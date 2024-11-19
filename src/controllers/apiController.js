@@ -8,7 +8,7 @@ const getApiInfo = (req, res) => {
                 description: 'Yeni bir tarama başlatır.',
                 requiredParameters: [
                     { name: 'url', type: 'string', description: 'Taranacak sayfanın URL\'si' },
-                    { name: 'baseurl', type: 'string', description: 'Linklerin tamamlanması için kullanılan temel URL' },
+                    { name: 'baseUrl', type: 'string', description: 'Linklerin tamamlanması için kullanılan temel URL' },
                 ],
                 optionalParameters: [
                     { name: 'header', type: 'string', description: 'Kullanılacak header tipi (mobile, desktop, tablet, random)' },
@@ -30,7 +30,7 @@ const getApiInfo = (req, res) => {
                     endpoint: '/scans',
                     body: {
                         "url": "https://example.com",
-                        "baseurl": "https://example.com",
+                        "baseUrl": "https://example.com",
                         "header": "mobile",
                         "content": true,
                         "headMeta": true,

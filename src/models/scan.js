@@ -1,14 +1,12 @@
 import mongoose from 'mongoose';
 
-const scanSchema = new mongoose.Schema({
-    uuid: { type: String, required: true, unique: true },
+const ScanSchema = new mongoose.Schema({
     url: { type: String, required: true },
-    baseurl: { type: String, required: true },
+    baseUrl: { type: String, required: true },
+    options: { type: Object, default: {} },
+    status: { type: String, default: 'pending' },
     startDate: { type: Date, default: Date.now },
     endDate: { type: Date },
-    status: { type: String, enum: ['waiting', 'completed', 'error'], default: 'waiting' },
-    options: { type: Object },
 });
 
-// Koleksiyon adını 'scans' olarak belirtiyoruz
-export default mongoose.model('Scan', scanSchema, 'scans');
+export default mongoose.model('Scan', ScanSchema);

@@ -1,9 +1,9 @@
 import scanService from '../../../src/services/scanService';
 
 describe('Scan Service', () => {
-  it('should throw an error if url or baseurl is missing', async () => {
+  it('should throw an error if url or baseUrl is missing', async () => {
     await expect(scanService.startScan({})).rejects.toThrow(
-      'URL ve baseurl parametreleri zorunludur.',
+      'URL ve baseUrl parametreleri zorunludur.',
     );
   });
 

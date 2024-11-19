@@ -1,56 +1,63 @@
 import scanService from '../services/scanService.js';
+import Scan from '../models/scan.js';
+import Link from '../models/link.js';
+import formatResponse from '../utils/responseFormatter.js';
 
 const startScan = async (req, res, next) => {
     try {
         const {
             url,
-            baseurl,
+            baseUrl,
             header,
-            content = false,
             headMeta = false,
-            headLink = false,
-            heading = false,
             headers = false,
-            structuredData = false,
-            jsFiles = false,
-            cssFiles = false,
-            tracking = false,
         } = req.body;
 
         // Gerekli parametrelerin kontrolü
-        if (!url || !baseurl) {
-            return res.status(400).json({
-                error: 'URL ve baseurl parametreleri zorunludur.',
-            });
+        if (!url || !baseUrl) {
+            return res.status(400).json(
+                formatResponse({
+                    status: 'error',
+                    message: 'URL ve baseUrl parametreleri zorunludur.',
+                })
+            );
         }
 
         const options = {
-            content,
             headMeta,
-            headLink,
-            heading,
             headers,
-            structuredData,
-            jsFiles,
-            cssFiles,
-            tracking,
         };
 
         const validHeaders = ['mobile', 'desktop', 'tablet', 'random'];
         const headerType = validHeaders.includes(header) ? header : undefined;
 
-        const result = await scanService.startScan({ url, baseurl, header: headerType, ...options });
-        res.json(result);
+        // Yeni bir tarama oluştur
+        const scan = new Scan({ url, baseUrl, options });
+        await scan.save();
+
+        // Tarama işlemini başlat
+        scanService.startScan({ scanId: scan._id, url, baseUrl, header: headerType, ...options });
+
+        res.json(
+            formatResponse({
+                message: 'Tarama işlemi başlatıldı.',
+                data: { scanId: scan._id },
+            })
+        );
     } catch (error) {
+        console.error('startScan fonksiyonunda hata:', error);
         next(error);
     }
 };
 
 const getScans = async (req, res, next) => {
     try {
-        const scans = await scanService.getScans();
-        console.log('getScans fonksiyonu çağrıldı. Bulunan taramalar:', scans);
-        res.json(scans);
+        const scans = await Scan.find().select('-__v');
+        res.json(
+            formatResponse({
+                data: scans,
+            })
+        );
     } catch (error) {
         console.error('getScans fonksiyonunda hata:', error);
         next(error);
@@ -60,8 +67,14 @@ const getScans = async (req, res, next) => {
 const getScanReport = async (req, res, next) => {
     try {
         const { scanId } = req.params;
-        const report = await scanService.getScanReport(scanId);
-        res.json(report);
+
+        const links = await Link.find({ scanId }).select('-__v');
+
+        res.json(
+            formatResponse({
+                data: links
+            })
+        );
     } catch (error) {
         console.error('getScanReport fonksiyonunda hata:', error);
         next(error);

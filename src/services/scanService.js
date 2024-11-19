@@ -1,38 +1,28 @@
 import axios from 'axios';
-import { v4 as uuidv4 } from 'uuid';
 import Scan from '../models/scan.js';
 import Link from '../models/link.js';
 import linkUtils from '../utils/linkUtils.js';
 
 const startScan = async (params) => {
-    const { url, baseurl, header: headerType, ...options } = params;
+    const { scanId, url, baseUrl, header: headerType, ...options } = params;
 
-    if (!url || !baseurl) {
-        throw new Error('URL ve baseurl parametreleri zorunludur.');
+    if (!url || !baseUrl) {
+        throw new Error('URL ve baseUrl parametreleri zorunludur.');
     }
-
-    const scanUuid = uuidv4();
-
-    // Yeni tarama kaydı oluştur
-    const newScan = new Scan({
-        uuid: scanUuid,
-        url,
-        baseurl,
-        options,
-    });
-
-    await newScan.save();
 
     // Asenkron işlemleri arka planda çalıştır
     (async () => {
         try {
+            // Tarama durumunu 'in-progress' olarak güncelle
+            await Scan.findByIdAndUpdate(scanId, { status: 'in-progress', startDate: new Date() });
+
             const mainResponse = await axios.get(url);
-            const links = linkUtils.extractLinks(mainResponse.data, baseurl);
+            const links = linkUtils.extractLinks(mainResponse.data, baseUrl);
 
             // Her bir link için Link modeli oluştur ve kaydet
             for (const link of links) {
                 const linkData = {
-                    scanUuid,
+                    scanId,
                     url: link.url,
                     statusCode: null,
                     statusMessage: null,
@@ -45,19 +35,20 @@ const startScan = async (params) => {
             // İstekler paralel olarak yapılabilir
             await Promise.all(
                 links.map(async (link) => {
-                    await linkUtils.fetchLinkStatusAndUpdateDB(link, scanUuid, options, headerType);
+                    await linkUtils.fetchLinkStatusAndUpdateDB(link, scanId, options, headerType);
                 }),
             );
 
             // Tarama tamamlandı, güncelle
-            await Scan.updateOne({ uuid: scanUuid }, { status: 'completed', endDate: new Date() });
+            await Scan.findByIdAndUpdate(scanId, { status: 'completed', endDate: new Date() });
         } catch (error) {
             console.error(`Tarama sırasında hata oluştu: ${error.message}`);
-            await Scan.updateOne({ uuid: scanUuid }, { status: 'error', endDate: new Date() });
+            await Scan.findByIdAndUpdate(scanId, { status: 'error', endDate: new Date() });
         }
     })();
 
-    return { message: 'Tarama başlatıldı.', scanId: scanUuid };
+    // Asenkron işlem başlatıldı, kontrolöre dönüş yapıyoruz
+    return;
 };
 
 const getScans = async () => {
@@ -65,12 +56,12 @@ const getScans = async () => {
     return scans;
 };
 
-const getScanReport = async (scanUuid) => {
-    const scan = await Scan.findOne({ uuid: scanUuid });
+const getScanReport = async (scanId) => {
+    const scan = await Scan.findById(scanId);
     if (!scan) {
         throw new Error('Belirtilen scanId ile eşleşen bir tarama bulunamadı.');
     }
-    const links = await Link.find({ scanUuid });
+    const links = await Link.find({ scanId });
     return {
         scan,
         links,

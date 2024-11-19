@@ -1,22 +1,25 @@
 import MetaTag from '../models/metaTag.js';
+import formatResponse from '../utils/responseFormatter.js';
 
-const getMetaTagsByLink = async (req, res, next) => {
+const getMetaTagsByScanAndLink = async (req, res, next) => {
+    const { scanId, linkId } = req.params;
+
     try {
-        const { scanId, linkId } = req.params;
+        const data = await MetaTag.find({ scanId, linkId }).select('attributes -_id');
 
-        // MetaTag belgelerini sorguluyoruz
-        const metaTags = await MetaTag.find({ scanUuid: scanId, linkId });
+        const attributesArray = data.map((metaTag) => metaTag.attributes);
 
-        if (!metaTags.length) {
-            return res.status(404).json({ message: 'Meta tag bulunamadı.' });
-        }
-
-        res.json(metaTags);
+        res.json(
+            formatResponse({
+                data: attributesArray,
+            })
+        );
     } catch (error) {
+        console.error('getMetaTagsByScanAndLink fonksiyonunda hata:', error);
         next(error);
     }
 };
 
 export default {
-    getMetaTagsByLink,
+    getMetaTagsByScanAndLink,
 };

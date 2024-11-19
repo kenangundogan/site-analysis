@@ -2,6 +2,7 @@ import { Router } from 'express';
 import scanController from '../controllers/scanController.js';
 import apiController from '../controllers/apiController.js';
 import metaTagController from '../controllers/metaTagController.js'; 
+import headersController from '../controllers/headersController.js'; 
 
 const router = Router();
 
@@ -17,7 +18,10 @@ router.post('/scans', scanController.startScan);
 // Belirli bir tarama raporunu alma
 router.get('/scans/:scanId', scanController.getScanReport);
 
-// Meta tag bilgilerini alma
-router.get('/scans/:scanId/links/:linkId/metaTags', metaTagController.getMetaTagsByLink);
+// Belirli bir tarama ve link için meta etiketlerini alma
+router.get('/scans/:scanId/links/:linkId/metaTags', metaTagController.getMetaTagsByScanAndLink);
+
+// Belirli bir tarama ve link için headers bilgilerini alma
+router.get('/scans/:scanId/links/:linkId/headers', headersController.getHeadersByScanAndLink);
 
 export default router;

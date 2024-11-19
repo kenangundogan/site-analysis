@@ -1,16 +1,18 @@
 import mongoose from 'mongoose';
 
-const linkSchema = new mongoose.Schema({
-    scanUuid: { type: String, required: true },
+const LinkSchema = new mongoose.Schema({
+    scanId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Scan',
+        required: true,
+    },
     url: { type: String, required: true },
-    statusCode: { type: Number },
-    statusMessage: { type: String },
-    startDate: { type: Date },
-    endDate: { type: Date },
-    duration: { type: Number },
-    response: { type: Object },
-    headerInfo: { type: Object },
-    headMeta: { type: Object }
+    statusCode: Number,
+    statusMessage: String,
+    startDate: Date,
+    endDate: Date,
+    duration: Number,
+    headerInfo: Object,
 });
 
-export default mongoose.model('Link', linkSchema);
+export default mongoose.model('Link', LinkSchema);

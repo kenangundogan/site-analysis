@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-const MetaTagSchema = new mongoose.Schema({
+const HeadersSchema = new mongoose.Schema({
     scanId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Scan',
@@ -11,10 +11,10 @@ const MetaTagSchema = new mongoose.Schema({
         ref: 'Link',
         required: true,
     },
-    attributes: {
+    headers: {
         type: Object,
         required: true,
     },
 });
 
-export default mongoose.model('MetaTag', MetaTagSchema);
+export default mongoose.model('Headers', HeadersSchema);
