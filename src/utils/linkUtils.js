@@ -68,15 +68,12 @@ const fetchLinkStatusAndUpdateDB = async (link, scanId, options, headerType) => 
             const metaTags = metaUtils.extractMetaTags(document);
 
             if (metaTags.length > 0) {
-                // MetaTag belgelerini oluştur
-                const metaTagDocuments = metaTags.map((attributes) => ({
-                    scanId,
-                    linkId: updatedLink._id,
-                    attributes,
-                }));
-
-                // MetaTag koleksiyonuna ekle
-                await MetaTag.insertMany(metaTagDocuments);
+                // MetaTag belgesini oluştur veya güncelle
+                await MetaTag.findOneAndUpdate(
+                    { scanId, linkId: updatedLink._id },
+                    { attributes: metaTags },
+                    { upsert: true, new: true }
+                );
             }
         }
     } catch (error) {

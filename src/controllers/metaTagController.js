@@ -5,13 +5,20 @@ const getMetaTagsByScanAndLink = async (req, res, next) => {
     const { scanId, linkId } = req.params;
 
     try {
-        const data = await MetaTag.find({ scanId, linkId }).select('attributes -_id');
+        const data = await MetaTag.findOne({ scanId, linkId }).select('attributes -_id');
 
-        const attributesArray = data.map((metaTag) => metaTag.attributes);
+        if (!data) {
+            return res.status(404).json(
+                formatResponse({
+                    status: 'error',
+                    message: 'Meta tag bulunamadı.',
+                })
+            );
+        }
 
         res.json(
             formatResponse({
-                data: attributesArray,
+                data: data.attributes,
             })
         );
     } catch (error) {

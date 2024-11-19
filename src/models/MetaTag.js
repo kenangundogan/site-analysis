@@ -10,6 +10,7 @@ const MetaTagSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Link',
         required: true,
+        unique: true,
     },
     attributes: {
         type: Object,
