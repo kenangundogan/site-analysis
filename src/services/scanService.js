@@ -2,6 +2,7 @@ import axios from 'axios';
 import Scan from '../models/scan.js';
 import Link from '../models/link.js';
 import linkUtils from '../utils/linkUtils.js';
+import extractLinks from '../utils/linkExtractor.js';
 
 const startScan = async (params) => {
     const { scanId, url, baseUrl, header: headerType, ...options } = params;
@@ -10,44 +11,36 @@ const startScan = async (params) => {
         throw new Error('URL ve baseUrl parametreleri zorunludur.');
     }
 
-    // Asenkron işlemleri arka planda çalıştır
-    (async () => {
-        try {
-            // Tarama durumunu 'in-progress' olarak güncelle
-            await Scan.findByIdAndUpdate(scanId, { status: 'in-progress', startDate: new Date() });
+    try {
+        // Tarama durumunu 'in-progress' olarak güncelle
+        await Scan.findByIdAndUpdate(scanId, { status: 'in-progress', startDate: new Date() });
 
-            const mainResponse = await axios.get(url);
-            const links = linkUtils.extractLinks(mainResponse.data, baseUrl);
+        const mainResponse = await axios.get(url);
+        const links = extractLinks(mainResponse.data, baseUrl);
 
-            // Her bir link için Link modeli oluştur ve kaydet
-            for (const link of links) {
-                const linkData = {
-                    scanId,
-                    url: link.url,
-                    statusCode: null,
-                    statusMessage: null,
-                    headerInfo: null,
-                };
-                const newLink = new Link(linkData);
-                await newLink.save();
-            }
+        // Her bir link için Link modeli oluştur ve kaydet
+        const linkDocuments = links.map((link) => ({
+            scanId,
+            url: link.url,
+        }));
 
-            // İstekler paralel olarak yapılabilir
-            await Promise.all(
-                links.map(async (link) => {
-                    await linkUtils.fetchLinkStatusAndUpdateDB(link, scanId, options, headerType);
-                }),
-            );
+        await Link.insertMany(linkDocuments);
 
-            // Tarama tamamlandı, güncelle
-            await Scan.findByIdAndUpdate(scanId, { status: 'completed', endDate: new Date() });
-        } catch (error) {
-            console.error(`Tarama sırasında hata oluştu: ${error.message}`);
-            await Scan.findByIdAndUpdate(scanId, { status: 'error', endDate: new Date() });
-        }
-    })();
+        // İstekler paralel olarak yapılabilir
+        await Promise.all(
+            links.map((link) =>
+                linkUtils.fetchLinkStatusAndUpdateDB(link, scanId, options, headerType)
+            )
+        );
 
-    // Asenkron işlem başlatıldı, kontrolöre dönüş yapıyoruz
+        // Tarama tamamlandı, güncelle
+        await Scan.findByIdAndUpdate(scanId, { status: 'completed', endDate: new Date() });
+    } catch (error) {
+        console.error(`Tarama sırasında hata oluştu: ${error.message}`);
+        await Scan.findByIdAndUpdate(scanId, { status: 'error', endDate: new Date() });
+    }
+
+    // İşlem tamamlandı
     return;
 };
 

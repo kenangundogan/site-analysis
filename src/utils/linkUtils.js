@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { JSDOM } from 'jsdom';
 import Link from '../models/link.js';
 import getRandomHeader from './headerSelector.js';
 import metaUtils from './metaUtils.js';
@@ -32,7 +31,7 @@ const fetchLinkStatusAndUpdateDB = async (link, scanId, options, headerType) => 
                 headerType: headerData.headerType || 'default',
                 headerId: headerData.headerId,
                 headersUsed: headers,
-            }
+            },
         };
 
         const updatedLink = await Link.findOneAndUpdate(
@@ -44,21 +43,24 @@ const fetchLinkStatusAndUpdateDB = async (link, scanId, options, headerType) => 
         // Header bilgilerini ayrı koleksiyona kaydet
         if (options.headers) {
             await headersUtils.processHeaders(response.headers, scanId, updatedLink._id);
+            await Link.findByIdAndUpdate(updatedLink._id, {
+                headersEndpoint: `/scans/${scanId}/links/${updatedLink._id}/headers`,
+            });
         }
-
-        // HTML içeriğini al
-        const html = response.data;
 
         // Meta verileri çıkar ve ayrı koleksiyona kaydet
         if (options.headMeta) {
-            await metaUtils.processMetaTags(html, scanId, updatedLink._id);
+            await metaUtils.processMetaTags(response.data, scanId, updatedLink._id);
+            await Link.findByIdAndUpdate(updatedLink._id, {
+                metaTagEndpoint: `/scans/${scanId}/links/${updatedLink._id}/metaTags`,
+            });
         }
     } catch (error) {
         const endTime = new Date();
 
         // Hata durumunda da status code'u almaya çalışalım
-        const statusCode = error.response ? error.response.status : null;
-        const statusMessage = error.response ? error.response.statusText : error.message;
+        const statusCode = error.response ? error.response.status : 500;
+        const statusMessage = error.message ? error.message : error.message;
 
         // Link bilgisini güncelle veya oluştur
         const linkUpdate = {
@@ -81,31 +83,10 @@ const fetchLinkStatusAndUpdateDB = async (link, scanId, options, headerType) => 
             { upsert: true, new: true }
         );
 
-        // Hata oluştuğu için meta verileri işlenmeyecek
+        // Hata oluştuğu için diğer işlemler yapılmayacak
     }
-};
-
-const extractLinks = (html, baseUrl) => {
-    const dom = new JSDOM(html);
-    const document = dom.window.document;
-    const links = Array.from(document.querySelectorAll('a'));
-    const uniqueUrls = new Set();
-
-    return links
-        .map((link) => {
-            const href = link.getAttribute('href');
-            const fullUrl = href.startsWith('/') ? `${baseUrl}${href}` : href;
-            if (href && !href.startsWith('#') && !href.startsWith('javascript') && !uniqueUrls.has(fullUrl)) {
-                uniqueUrls.add(fullUrl);
-                return {
-                    url: fullUrl,
-                };
-            }
-        })
-        .filter((link) => link);
 };
 
 export default {
     fetchLinkStatusAndUpdateDB,
-    extractLinks,
 };
