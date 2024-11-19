@@ -5,7 +5,7 @@ const getMetaTagsByScanAndLink = async (req, res, next) => {
     const { scanId, linkId } = req.params;
 
     try {
-        const data = await MetaTag.findOne({ scanId, linkId }).select('attributes -_id');
+        const data = await MetaTag.findOne({ scanId, linkId });
 
         if (!data) {
             return res.status(404).json(
@@ -18,7 +18,7 @@ const getMetaTagsByScanAndLink = async (req, res, next) => {
 
         res.json(
             formatResponse({
-                data: data.attributes,
+                data: data
             })
         );
     } catch (error) {

@@ -5,7 +5,7 @@ const getHeadersByScanAndLink = async (req, res, next) => {
     const { scanId, linkId } = req.params;
 
     try {
-        const data = await Headers.findOne({ scanId, linkId }).select('headers -_id');
+        const data = await Headers.findOne({ scanId, linkId });
         
         if (!data) {
             return res.status(404).json(
@@ -18,7 +18,7 @@ const getHeadersByScanAndLink = async (req, res, next) => {
 
         res.json(
             formatResponse({
-                data: data.headers || [],
+                data: data
             })
         );
     } catch (error) {
