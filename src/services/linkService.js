@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { JSDOM } from 'jsdom';
 import Link from '../models/link.js';
 import getRandomHeader from '../utils/headerSelector.js';
 import metaUtils from './_metaTagService.js';
@@ -42,7 +43,10 @@ const fetchLinkStatusAndUpdateDB = async (link, scanId, options, headerType) => 
         );
 
         let content = [];
-        // Header bilgilerini ayrı koleksiyona kaydet
+        const responseData = response.data;
+        const dom = new JSDOM(responseData);
+        const document = dom.window.document;
+        
         if (options.headers) {
             await headersUtils.processHeaders(response.headers, scanId, updatedLink._id);
             content.push({
@@ -51,9 +55,8 @@ const fetchLinkStatusAndUpdateDB = async (link, scanId, options, headerType) => 
             });
         }
 
-        // Meta verileri çıkar ve ayrı koleksiyona kaydet
         if (options.headMeta) {
-            await metaUtils.processMetaTags(response.data, scanId, updatedLink._id);
+            await metaUtils.processMetaTags(document, scanId, updatedLink._id);
             content.push({
                 type: 'metaTags',
                 metaTags: `/scans/${scanId}/links/${updatedLink._id}/metaTags`,
