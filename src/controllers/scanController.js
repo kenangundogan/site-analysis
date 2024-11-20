@@ -40,6 +40,7 @@ const startScan = async (req, res, next) => {
 
         res.json(
             formatResponse({
+                status: 'success',
                 message: 'Tarama işlemi başlatıldı.',
                 data: { scanId: scan._id },
             })
