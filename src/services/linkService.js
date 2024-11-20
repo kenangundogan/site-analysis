@@ -1,8 +1,8 @@
 import axios from 'axios';
 import Link from '../models/link.js';
-import getRandomHeader from './headerSelector.js';
-import metaUtils from './metaUtils.js';
-import headersUtils from './headersUtils.js';
+import getRandomHeader from '../utils/headerSelector.js';
+import metaUtils from './_metaTagService.js';
+import headersUtils from './_headersService.js';
 
 const fetchLinkStatusAndUpdateDB = async (link, scanId, options, headerType) => {
     const startTime = new Date();
@@ -27,11 +27,7 @@ const fetchLinkStatusAndUpdateDB = async (link, scanId, options, headerType) => 
             startDate: startTime,
             endDate: endTime,
             duration: (endTime - startTime) / 1000,
-            headerInfo: {
-                headerType: headerData.headerType || 'default',
-                headerId: headerData.headerId,
-                headersUsed: headers,
-            },
+            responseHeader: headerData
         };
 
         const updatedLink = await Link.findOneAndUpdate(
@@ -43,18 +39,13 @@ const fetchLinkStatusAndUpdateDB = async (link, scanId, options, headerType) => 
         // Header bilgilerini ayrı koleksiyona kaydet
         if (options.headers) {
             await headersUtils.processHeaders(response.headers, scanId, updatedLink._id);
-            await Link.findByIdAndUpdate(updatedLink._id, {
-                headersEndpoint: `/scans/${scanId}/links/${updatedLink._id}/headers`,
-            });
         }
 
         // Meta verileri çıkar ve ayrı koleksiyona kaydet
         if (options.headMeta) {
             await metaUtils.processMetaTags(response.data, scanId, updatedLink._id);
-            await Link.findByIdAndUpdate(updatedLink._id, {
-                metaTagEndpoint: `/scans/${scanId}/links/${updatedLink._id}/metaTags`,
-            });
         }
+        
     } catch (error) {
         const endTime = new Date();
 
@@ -70,11 +61,7 @@ const fetchLinkStatusAndUpdateDB = async (link, scanId, options, headerType) => 
             startDate: startTime,
             endDate: endTime,
             duration: (endTime - startTime) / 1000,
-            headerInfo: {
-                headerType: headerData.headerType || 'default',
-                headerId: headerData.headerId,
-                headersUsed: headers,
-            },
+            responseHeader: headerData
         };
 
         await Link.findOneAndUpdate(

@@ -12,7 +12,7 @@ const LinkSchema = new mongoose.Schema({
     startDate: Date,
     endDate: Date,
     duration: Number,
-    headerInfo: Object,
+    responseHeader: Object,
 });
 
 export default mongoose.model('Link', LinkSchema);

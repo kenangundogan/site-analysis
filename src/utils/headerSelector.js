@@ -29,8 +29,8 @@ const getRandomHeader = (headerType) => {
 
     return {
         headerType,
+        headerId: randomIndex,
         headers: selectedHeader,
-        headerId: randomIndex, // Header'ın indeksini veya kimliğini ekliyoruz
     };
 };
 

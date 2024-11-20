@@ -1,7 +1,7 @@
 import axios from 'axios';
 import Scan from '../models/scan.js';
 import Link from '../models/link.js';
-import linkUtils from '../utils/linkUtils.js';
+import linkUtils from './linkService.js';
 import extractLinks from '../utils/linkExtractor.js';
 
 const startScan = async (params) => {
