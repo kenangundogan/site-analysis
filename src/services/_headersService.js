@@ -15,7 +15,6 @@ const extractHeaders = (responseHeaders) => {
 const processHeaders = async (responseHeaders, scanId, linkId) => {
     const extractedHeaders = extractHeaders(responseHeaders);
 
-    // Headers belgesini oluştur veya güncelle
     await Headers.findOneAndUpdate(
         { scanId, linkId },
         { headers: extractedHeaders },
