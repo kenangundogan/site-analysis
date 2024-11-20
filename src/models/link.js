@@ -7,12 +7,14 @@ const LinkSchema = new mongoose.Schema({
         required: true,
     },
     url: { type: String, required: true },
-    statusCode: Number,
-    statusMessage: String,
-    startDate: Date,
-    endDate: Date,
-    duration: Number,
+    date: {
+        start: Date,
+        end: Date,
+        duration: Number,
+    },
+    status: Object,
     responseHeader: Object,
+    content: Object
 });
 
 export default mongoose.model('Link', LinkSchema);

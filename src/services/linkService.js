@@ -19,15 +19,20 @@ const fetchLinkStatusAndUpdateDB = async (link, scanId, options, headerType) => 
         });
         const endTime = new Date();
 
+
         // Link bilgisini güncelle veya oluştur
         const linkUpdate = {
             scanId,
-            statusCode: response.status,
-            statusMessage: response.statusText,
-            startDate: startTime,
-            endDate: endTime,
-            duration: (endTime - startTime) / 1000,
-            responseHeader: headerData
+            date: {
+                start: startTime,
+                end: endTime,
+                duration: (endTime - startTime) / 1000,
+            },
+            status: {
+                code: response.status,
+                message: response.statusText,
+            },
+            responseHeader: headerData,
         };
 
         const updatedLink = await Link.findOneAndUpdate(
@@ -36,16 +41,30 @@ const fetchLinkStatusAndUpdateDB = async (link, scanId, options, headerType) => 
             { upsert: true, new: true }
         );
 
+        let content = [];
         // Header bilgilerini ayrı koleksiyona kaydet
         if (options.headers) {
             await headersUtils.processHeaders(response.headers, scanId, updatedLink._id);
+            content.push({
+                type: 'headers',
+                headers: `/scans/${scanId}/links/${updatedLink._id}/headers`,
+            });
         }
 
         // Meta verileri çıkar ve ayrı koleksiyona kaydet
         if (options.headMeta) {
             await metaUtils.processMetaTags(response.data, scanId, updatedLink._id);
+            content.push({
+                type: 'metaTags',
+                metaTags: `/scans/${scanId}/links/${updatedLink._id}/metaTags`,
+            });
         }
-        
+
+        // Link'i güncelle
+        await Link.findByIdAndUpdate(updatedLink._id, {
+            content,
+        });
+
     } catch (error) {
         const endTime = new Date();
 
@@ -56,11 +75,15 @@ const fetchLinkStatusAndUpdateDB = async (link, scanId, options, headerType) => 
         // Link bilgisini güncelle veya oluştur
         const linkUpdate = {
             scanId,
-            statusCode,
-            statusMessage,
-            startDate: startTime,
-            endDate: endTime,
-            duration: (endTime - startTime) / 1000,
+            date: {
+                start: startTime,
+                end: endTime,
+                duration: (endTime - startTime) / 1000,
+            },
+            status: {
+                code: statusCode,
+                message: statusMessage,
+            },
             responseHeader: headerData
         };
 
