@@ -11,7 +11,7 @@ const getMetaTagByScanAndLink = async (req, res, next) => {
             return res.status(404).json(
                 formatResponse({
                     status: 'error',
-                    message: 'Meta tag bulunamadı.',
+                    message: 'Meta etiketleri bulunamadı.'
                 })
             );
         }

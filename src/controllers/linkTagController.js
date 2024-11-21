@@ -11,7 +11,7 @@ const getLinkTagByScanAndLink = async (req, res, next) => {
             return res.status(404).json(
                 formatResponse({
                     status: 'error',
-                    message: 'Link tag bulunamadı.',
+                    message: 'Link etiketleri bulunamadı.'
                 })
             );
         }
