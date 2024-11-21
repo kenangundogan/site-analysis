@@ -9,8 +9,9 @@ const startScan = async (req, res, next) => {
             url,
             baseUrl,
             header,
-            headMeta = false,
             headers = false,
+            metaTag = false,
+            linkTag = false,
         } = req.body;
 
         // Gerekli parametrelerin kontrolü
@@ -24,8 +25,9 @@ const startScan = async (req, res, next) => {
         }
 
         const options = {
-            headMeta,
             headers,
+            metaTag,
+            linkTag,
         };
 
         const validHeaders = ['mobile', 'desktop', 'tablet', 'random'];

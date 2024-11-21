@@ -3,6 +3,7 @@ import scanController from '../controllers/scanController.js';
 import apiController from '../controllers/apiController.js';
 import metaTagController from '../controllers/metaTagController.js'; 
 import headersController from '../controllers/headersController.js'; 
+import linkTagController from '../controllers/linkTagController.js';
 
 const router = Router();
 
@@ -18,10 +19,13 @@ router.post('/scans', scanController.startScan);
 // Belirli bir tarama raporunu alma
 router.get('/scans/:scanId', scanController.getScanReport);
 
+// Belirli bir tarama ve link için headers bilgilerini alma
+router.get('/scans/:scanId/links/:linkId/headers', headersController.getHeadersByScanAndLink);
+
 // Belirli bir tarama ve link için meta etiketlerini alma
 router.get('/scans/:scanId/links/:linkId/metaTag', metaTagController.getMetaTagByScanAndLink);
 
-// Belirli bir tarama ve link için headers bilgilerini alma
-router.get('/scans/:scanId/links/:linkId/headers', headersController.getHeadersByScanAndLink);
+// Belirli bir tarama ve link için link etiketlerini alma
+router.get('/scans/:scanId/links/:linkId/linkTag', linkTagController.getLinkTagByScanAndLink);
 
 export default router;

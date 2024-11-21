@@ -2,7 +2,8 @@ import axios from 'axios';
 import { JSDOM } from 'jsdom';
 import Link from '../models/link.js';
 import getRandomHeader from '../utils/headerSelector.js';
-import metaUtils from './_metaTagService.js';
+import metaTagService from './_metaTagService.js';
+import linkTagService from './_linkTagService.js';
 import headersUtils from './_headersService.js';
 
 const fetchLinkStatusAndUpdateDB = async (link, scanId, options, headerType) => {
@@ -55,11 +56,19 @@ const fetchLinkStatusAndUpdateDB = async (link, scanId, options, headerType) => 
             });
         }
 
-        if (options.headMeta) {
-            await metaUtils.processMetaTag(document, scanId, updatedLink._id);
+        if (options.metaTag) {
+            await metaTagService.processMetaTag(document, scanId, updatedLink._id);
             report.push({
                 type: 'metaTag',
                 endpoint: `/scans/${scanId}/links/${updatedLink._id}/metaTag`,
+            });
+        }
+
+        if (options.linkTag) {
+            await linkTagService.processLinkTag(document, scanId, updatedLink._id);
+            report.push({
+                type: 'linkTag',
+                endpoint: `/scans/${scanId}/links/${updatedLink._id}/linkTag`,
             });
         }
 
