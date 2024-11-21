@@ -7,6 +7,7 @@ import linkTagService from './_linkTagService.js';
 import headersUtils from './_headersService.js';
 import openGraphTagService from './_openGraphTagService.js';
 import twitterCardTagService from './_twitterCardTagService.js';
+import headingTagService from './_headingTagService.js';
 
 const fetchLinkStatusAndUpdateDB = async (link, scanId, options, headerType) => {
     const startTime = new Date();
@@ -87,6 +88,14 @@ const fetchLinkStatusAndUpdateDB = async (link, scanId, options, headerType) => 
             report.push({
                 type: 'twitterCardTag',
                 endpoint: `/scans/${scanId}/links/${updatedLink._id}/twitterCardTag`,
+            });
+        }
+
+        if (options.headingTag) {
+            await headingTagService.processHeadingTag(document, scanId, updatedLink._id);
+            report.push({
+                type: 'headingTag',
+                endpoint: `/scans/${scanId}/links/${updatedLink._id}/headingTag`,
             });
         }
 
