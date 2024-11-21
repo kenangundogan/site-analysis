@@ -12,13 +12,14 @@ const startScan = async (params) => {
     }
 
     try {
+        const startDate = new Date();
         const report = {
             type: 'urls',
             endpoint: `/scans/${scanId}`,
         }
         
         // Tarama durumunu 'in-progress' olarak güncelle
-        await Scan.findByIdAndUpdate(scanId, { status: 'in-progress',  'date.start': new Date(), 'date.end': null, report });
+        await Scan.findByIdAndUpdate(scanId, { status: 'in-progress',  'date.start': startDate, 'date.end': null, 'date.duration': null, report });
 
         const mainResponse = await axios.get(url);
         const links = extractLinks(mainResponse.data, baseUrl);
@@ -39,10 +40,14 @@ const startScan = async (params) => {
         );
 
         // Tarama tamamlandı, güncelle
-        await Scan.findByIdAndUpdate(scanId, { status: 'completed', 'date.end': new Date() });
+        const endDate = new Date();
+        const duration = (endDate - startDate) / 1000;
+        await Scan.findByIdAndUpdate(scanId, { status: 'completed', 'date.end': endDate, 'date.duration': duration });
     } catch (error) {
+        const endDate = new Date();
+        const duration = (endDate - startDate) / 1000;
         console.error(`Tarama sırasında hata oluştu: ${error.message}`);
-        await Scan.findByIdAndUpdate(scanId, { status: 'error', 'date.end': new Date() });
+        await Scan.findByIdAndUpdate(scanId, { status: 'error', 'date.end': endDate, 'date.duration': duration });
     }
 
     // İşlem tamamlandı
