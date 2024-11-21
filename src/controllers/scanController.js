@@ -5,14 +5,7 @@ import formatResponse from '../utils/responseFormatter.js';
 
 const startScan = async (req, res, next) => {
     try {
-        const {
-            url,
-            baseUrl,
-            header,
-            headers = false,
-            metaTag = false,
-            linkTag = false,
-        } = req.body;
+        const { url, baseUrl, header, ...options } = req.body;
 
         // Gerekli parametrelerin kontrolü
         if (!url || !baseUrl) {
@@ -24,21 +17,18 @@ const startScan = async (req, res, next) => {
             );
         }
 
-        const options = {
-            headers,
-            metaTag,
-            linkTag,
-        };
-
-        const validHeaders = ['mobile', 'desktop', 'tablet', 'random'];
-        const headerType = validHeaders.includes(header) ? header : undefined;
-
         // Yeni bir tarama oluştur
         const scan = new Scan({ url, baseUrl, options });
         await scan.save();
 
         // Tarama işlemini başlat
-        scanService.startScan({ scanId: scan._id, url, baseUrl, header: headerType, ...options });
+        scanService.startScan({
+            scanId: scan._id,
+            url,
+            baseUrl,
+            header: header,
+            ...options,
+        });
 
         res.json(
             formatResponse({
@@ -75,7 +65,7 @@ const getScanReport = async (req, res, next) => {
 
         res.json(
             formatResponse({
-                data: links
+                data: links,
             })
         );
     } catch (error) {
