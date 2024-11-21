@@ -18,7 +18,7 @@ const startScan = async (req, res, next) => {
         }
 
         // Yeni bir tarama oluştur
-        const scan = new Scan({ url, baseUrl, options });
+        const scan = new Scan({ url, baseUrl });
         await scan.save();
 
         // Tarama işlemini başlat

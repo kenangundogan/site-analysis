@@ -16,8 +16,9 @@ const startScan = async (params) => {
             type: 'urls',
             endpoint: `/scans/${scanId}`,
         }
+        
         // Tarama durumunu 'in-progress' olarak güncelle
-        await Scan.findByIdAndUpdate(scanId, { status: 'in-progress', startDate: new Date(), report: report });
+        await Scan.findByIdAndUpdate(scanId, { status: 'in-progress',  'date.start': new Date(), 'date.end': null, report });
 
         const mainResponse = await axios.get(url);
         const links = extractLinks(mainResponse.data, baseUrl);
@@ -38,10 +39,10 @@ const startScan = async (params) => {
         );
 
         // Tarama tamamlandı, güncelle
-        await Scan.findByIdAndUpdate(scanId, { status: 'completed', endDate: new Date() });
+        await Scan.findByIdAndUpdate(scanId, { status: 'completed', 'date.end': new Date() });
     } catch (error) {
         console.error(`Tarama sırasında hata oluştu: ${error.message}`);
-        await Scan.findByIdAndUpdate(scanId, { status: 'error', endDate: new Date() });
+        await Scan.findByIdAndUpdate(scanId, { status: 'error', 'date.end': new Date() });
     }
 
     // İşlem tamamlandı

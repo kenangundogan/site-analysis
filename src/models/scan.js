@@ -5,8 +5,7 @@ const ScanSchema = new mongoose.Schema({
     baseUrl: { type: String, required: true },
     options: { type: Object, default: {} },
     status: { type: String, default: 'pending' },
-    startDate: { type: Date, default: Date.now },
-    endDate: { type: Date },
+    date: { type: Object },
     report: { type: Object },
 });
 
