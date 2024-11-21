@@ -4,6 +4,7 @@ import apiController from '../controllers/apiController.js';
 import metaTagController from '../controllers/metaTagController.js'; 
 import headersController from '../controllers/headersController.js'; 
 import linkTagController from '../controllers/linkTagController.js';
+import openGraphController from '../controllers/openGraphTagController.js';
 
 const router = Router();
 
@@ -27,5 +28,8 @@ router.get('/scans/:scanId/links/:linkId/metaTag', metaTagController.getMetaTagB
 
 // Belirli bir tarama ve link için link etiketlerini alma
 router.get('/scans/:scanId/links/:linkId/linkTag', linkTagController.getLinkTagByScanAndLink);
+
+// Belirli bir tarama ve link için open graph etiketlerini alma
+router.get('/scans/:scanId/links/:linkId/openGraphTag', openGraphController.getOpenGraphTagByScanAndLink);
 
 export default router;

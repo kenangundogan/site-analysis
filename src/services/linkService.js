@@ -5,6 +5,7 @@ import getRandomHeader from '../utils/headerSelector.js';
 import metaTagService from './_metaTagService.js';
 import linkTagService from './_linkTagService.js';
 import headersUtils from './_headersService.js';
+import openGraphTagService from './_openGraphTagService.js';
 
 const fetchLinkStatusAndUpdateDB = async (link, scanId, options, headerType) => {
     const startTime = new Date();
@@ -69,6 +70,14 @@ const fetchLinkStatusAndUpdateDB = async (link, scanId, options, headerType) => 
             report.push({
                 type: 'linkTag',
                 endpoint: `/scans/${scanId}/links/${updatedLink._id}/linkTag`,
+            });
+        }
+
+        if (options.openGraphTag) {
+            await openGraphTagService.processOpenGraphTag(document, scanId, updatedLink._id);
+            report.push({
+                type: 'openGraphTag',
+                endpoint: `/scans/${scanId}/links/${updatedLink._id}/openGraphTag`,
             });
         }
 
