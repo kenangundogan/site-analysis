@@ -12,8 +12,12 @@ const startScan = async (params) => {
     }
 
     try {
+        const report = {
+            type: 'urls',
+            endpoint: `/scans/${scanId}`,
+        }
         // Tarama durumunu 'in-progress' olarak güncelle
-        await Scan.findByIdAndUpdate(scanId, { status: 'in-progress', startDate: new Date() });
+        await Scan.findByIdAndUpdate(scanId, { status: 'in-progress', startDate: new Date(), report: report });
 
         const mainResponse = await axios.get(url);
         const links = extractLinks(mainResponse.data, baseUrl);

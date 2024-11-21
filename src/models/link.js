@@ -14,7 +14,7 @@ const LinkSchema = new mongoose.Schema({
     },
     status: Object,
     responseHeader: Object,
-    content: Object
+    report: Object
 });
 
 export default mongoose.model('Link', LinkSchema);

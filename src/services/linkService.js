@@ -42,30 +42,30 @@ const fetchLinkStatusAndUpdateDB = async (link, scanId, options, headerType) => 
             { upsert: true, new: true }
         );
 
-        let content = [];
+        let report = [];
         const responseData = response.data;
         const dom = new JSDOM(responseData);
         const document = dom.window.document;
         
         if (options.headers) {
             await headersUtils.processHeaders(response.headers, scanId, updatedLink._id);
-            content.push({
+            report.push({
                 type: 'headers',
-                headers: `/scans/${scanId}/links/${updatedLink._id}/headers`,
+                endpoint: `/scans/${scanId}/links/${updatedLink._id}/headers`,
             });
         }
 
         if (options.headMeta) {
             await metaUtils.processMetaTag(document, scanId, updatedLink._id);
-            content.push({
+            report.push({
                 type: 'metaTag',
-                metaTag: `/scans/${scanId}/links/${updatedLink._id}/metaTag`,
+                endpoint: `/scans/${scanId}/links/${updatedLink._id}/metaTag`,
             });
         }
 
         // Link'i güncelle
         await Link.findByIdAndUpdate(updatedLink._id, {
-            content,
+            report,
         });
 
     } catch (error) {

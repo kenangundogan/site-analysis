@@ -7,6 +7,7 @@ const ScanSchema = new mongoose.Schema({
     status: { type: String, default: 'pending' },
     startDate: { type: Date, default: Date.now },
     endDate: { type: Date },
+    report: { type: Object },
 });
 
 export default mongoose.model('Scan', ScanSchema);
