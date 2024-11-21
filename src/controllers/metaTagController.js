@@ -1,7 +1,7 @@
 import MetaTag from '../models/metaTag.js';
 import formatResponse from '../utils/responseFormatter.js';
 
-const getMetaTagsByScanAndLink = async (req, res, next) => {
+const getMetaTagByScanAndLink = async (req, res, next) => {
     const { scanId, linkId } = req.params;
 
     try {
@@ -22,11 +22,11 @@ const getMetaTagsByScanAndLink = async (req, res, next) => {
             })
         );
     } catch (error) {
-        console.error('getMetaTagsByScanAndLink fonksiyonunda hata:', error);
+        console.error('getMetaTagByScanAndLink fonksiyonunda hata:', error);
         next(error);
     }
 };
 
 export default {
-    getMetaTagsByScanAndLink,
+    getMetaTagByScanAndLink,
 };

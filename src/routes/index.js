@@ -19,7 +19,7 @@ router.post('/scans', scanController.startScan);
 router.get('/scans/:scanId', scanController.getScanReport);
 
 // Belirli bir tarama ve link için meta etiketlerini alma
-router.get('/scans/:scanId/links/:linkId/metaTags', metaTagController.getMetaTagsByScanAndLink);
+router.get('/scans/:scanId/links/:linkId/metaTag', metaTagController.getMetaTagByScanAndLink);
 
 // Belirli bir tarama ve link için headers bilgilerini alma
 router.get('/scans/:scanId/links/:linkId/headers', headersController.getHeadersByScanAndLink);

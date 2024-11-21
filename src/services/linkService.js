@@ -56,10 +56,10 @@ const fetchLinkStatusAndUpdateDB = async (link, scanId, options, headerType) => 
         }
 
         if (options.headMeta) {
-            await metaUtils.processMetaTags(document, scanId, updatedLink._id);
+            await metaUtils.processMetaTag(document, scanId, updatedLink._id);
             content.push({
-                type: 'metaTags',
-                metaTags: `/scans/${scanId}/links/${updatedLink._id}/metaTags`,
+                type: 'metaTag',
+                metaTag: `/scans/${scanId}/links/${updatedLink._id}/metaTag`,
             });
         }
 
