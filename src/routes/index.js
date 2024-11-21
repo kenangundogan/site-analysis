@@ -7,6 +7,8 @@ import linkTagController from '../controllers/linkTagController.js';
 import openGraphTagController from '../controllers/openGraphTagController.js';
 import twitterCardTagController from '../controllers/twitterCardTagController.js';
 import headingTagController from '../controllers/headingTagController.js';
+import styleTagController from '../controllers/styleTagController.js';
+import scriptTagController from '../controllers/scriptTagController.js';
 
 const router = Router();
 
@@ -39,5 +41,11 @@ router.get('/scans/:scanId/links/:linkId/twitterCardTag', twitterCardTagControll
 
 // Belirli bir tarama ve link için heading etiketlerini alma
 router.get('/scans/:scanId/links/:linkId/headingTag', headingTagController.getHeadingTagByScanAndLink);
+
+// Belirli bir tarama ve link için style etiketlerini alma
+router.get('/scans/:scanId/links/:linkId/styleTag', styleTagController.getStyleTagByScanAndLink);
+
+// Belirli bir tarama ve link için script etiketlerini alma
+router.get('/scans/:scanId/links/:linkId/scriptTag', scriptTagController.getScriptTagByScanAndLink);
 
 export default router;

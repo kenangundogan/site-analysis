@@ -8,6 +8,8 @@ import headersUtils from './_headersService.js';
 import openGraphTagService from './_openGraphTagService.js';
 import twitterCardTagService from './_twitterCardTagService.js';
 import headingTagService from './_headingTagService.js';
+import styleTagService from './_styleTagService.js';
+import scriptTagService from './_scriptTagService.js';
 
 const fetchLinkStatusAndUpdateDB = async (link, scanId, options, headerType) => {
     const startTime = new Date();
@@ -96,6 +98,22 @@ const fetchLinkStatusAndUpdateDB = async (link, scanId, options, headerType) => 
             report.push({
                 type: 'headingTag',
                 endpoint: `/scans/${scanId}/links/${updatedLink._id}/headingTag`,
+            });
+        }
+
+        if (options.styleTag) {
+            await styleTagService.processStyleTag(document, scanId, updatedLink._id);
+            report.push({
+                type: 'styleTag',
+                endpoint: `/scans/${scanId}/links/${updatedLink._id}/styleTag`,
+            });
+        }
+
+        if (options.scriptTag) {
+            await scriptTagService.processScriptTag(document, scanId, updatedLink._id);
+            report.push({
+                type: 'scriptTag',
+                endpoint: `/scans/${scanId}/links/${updatedLink._id}/scriptTag`,
             });
         }
 
