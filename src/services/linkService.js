@@ -10,6 +10,7 @@ import twitterCardTagService from './_twitterCardTagService.js';
 import headingTagService from './_headingTagService.js';
 import styleTagService from './_styleTagService.js';
 import scriptTagService from './_scriptTagService.js';
+import structuredDataTagService from './_structuredDataTagService.js';
 
 const fetchLinkStatusAndUpdateDB = async (link, scanId, options, headerType) => {
     const startTime = new Date();
@@ -114,6 +115,14 @@ const fetchLinkStatusAndUpdateDB = async (link, scanId, options, headerType) => 
             report.push({
                 type: 'scriptTag',
                 endpoint: `/scans/${scanId}/links/${updatedLink._id}/scriptTag`,
+            });
+        }
+
+        if (options.structuredDataTag) {
+            await structuredDataTagService.processStructuredDataTag(document, scanId, updatedLink._id);
+            report.push({
+                type: 'structuredDataTag',
+                endpoint: `/scans/${scanId}/links/${updatedLink._id}/structuredDataTag`,
             });
         }
 

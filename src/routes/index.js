@@ -9,6 +9,7 @@ import twitterCardTagController from '../controllers/twitterCardTagController.js
 import headingTagController from '../controllers/headingTagController.js';
 import styleTagController from '../controllers/styleTagController.js';
 import scriptTagController from '../controllers/scriptTagController.js';
+import structuredDataTagController from '../controllers/structuredDataTagController.js';
 
 const router = Router();
 
@@ -47,5 +48,8 @@ router.get('/scans/:scanId/links/:linkId/styleTag', styleTagController.getStyleT
 
 // Belirli bir tarama ve link için script etiketlerini alma
 router.get('/scans/:scanId/links/:linkId/scriptTag', scriptTagController.getScriptTagByScanAndLink);
+
+// Belirli bir tarama ve link için structured data bilgilerini alma
+router.get('/scans/:scanId/links/:linkId/structuredDataTag', structuredDataTagController.getStructuredDataTagByScanAndLink);
 
 export default router;

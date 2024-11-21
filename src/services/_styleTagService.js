@@ -5,21 +5,25 @@ const extractStyleTag = (document) => {
 
     // Inline CSS'leri al
     const styleTags = document.querySelectorAll('style');
-    styleTags.forEach((tag) => {
-        attributes.push({
-            type: 'style',
-            content: tag.innerHTML.trim(),
+    if (styleTags) {
+        styleTags.forEach((tag) => {
+            attributes.push({
+                type: 'style',
+                content: tag.innerHTML.trim(),
+            });
         });
-    });
+    }
 
     // External CSS'leri al
     const linkTags = document.querySelectorAll('link[rel="stylesheet"]');
-    linkTags.forEach((tag) => {
-        attributes.push({
-            type: 'link',
-            content: tag.href,
+    if (linkTags) {
+        linkTags.forEach((tag) => {
+            attributes.push({
+                type: 'link',
+                content: tag.href,
+            });
         });
-    });
+    }
 
     return attributes;
 };
