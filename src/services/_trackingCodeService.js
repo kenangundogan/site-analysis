@@ -1,22 +1,37 @@
+// Google Tag Manager	GTM-XXXXX	https://www.googletagmanager.com/gtm.js
+// Universal Analytics	UA-XXXXX-Y	https://www.google-analytics.com/analytics.js
+// Google Analytics (GA4)	GA-XXXXX	https://www.googletagmanager.com/gtag/js
+// Google Ads	AW-XXXXX	https://www.googletagmanager.com/gtag/js
+// DoubleClick	DC-XXXXX	https://securepubads.g.doubleclick.net/tag/js/gpt.js
+// Google Optimize	OPT-XXXXX	https://www.googleoptimize.com/optimize.js
+// Google Remarketing	AW-XXXXX	https://www.googletagmanager.com/gtag/js
+// Google Floodlight	XXXXX	https://fls.doubleclick.net
+
 import TrackingCode from '../models/trackingCode.js';
 
 const extractTrackingCode = (document) => {
     const allText = document.documentElement.outerHTML;
 
     // Kodları regex ile yakalamak için bir yapı oluştur
-    const extractCodes = (pattern, key) => {
-        return [...(allText.match(pattern) || [])].map(code => ({ key, value: code.replace(/['"`]/g, '') }));
+    const extractCodes = (pattern, key, cleanValue = false) => {
+        return [...(allText.match(pattern) || [])].map(code => {
+            let value = code.trim().replace(/^[\s'"]|['"]$/g, ''); // Çevreleyen boşluk ve tırnakları temizle
+            if (cleanValue) {
+                value = value.replace(/^src=["']?|["']$/g, ''); // "src=" temizle
+            }
+            return { key, value };
+        });
     };
 
-    const googleGtmCode = [...extractCodes(/['"`]GTM-[A-Z0-9]+['"`]/g, 'GTM')];
-    const googleUaCode = [...extractCodes(/['"`]UA-[A-Z0-9]+['"`]/g, 'UA')];
-    const googleAdsCode = [...extractCodes(/['"`]AW-[A-Z0-9]+['"`]/g, 'Ads')];
-    const googleDcCode = [...extractCodes(/['"`]DC-[A-Z0-9]+['"`]/g, 'DC')];
+    const googleGtmCode = [...extractCodes(/(?:^|['"\s])GTM-[A-Z0-9]+(?:['"\s]|$)/g, 'GTM')];
+    const googleUaCode = [...extractCodes(/(?:^|['"\s])UA-\d+(-[A-Za-z0-9]+)?(?:['"\s]|$)/g, 'UA')];
+    const googleAdsCode = [...extractCodes(/(?:^|['"\s])AW-[A-Z0-9]+(?:['"\s]|$)/g, 'Ads')];
+    const googleDcCode = [...extractCodes(/(?:^|['"\s])DC-[A-Z0-9]+(?:['"\s]|$)/g, 'DC')];
 
-    const googleGtmUrls = [...extractCodes(/src=['"]([^'"]*googletagmanager[^'"]*)['"]/g, 'GTM')];
-    const googleUaUrls = [...extractCodes(/src=['"]([^'"]*analytics[^'"]*)['"]/g, 'UA')];
-    const googleAdsUrls = [...extractCodes(/src=['"]([^'"]*googleads[^'"]*)['"]/g, 'Ads')];
-    const googleDcUrls = [...extractCodes(/src=['"]([^'"]*doubleclick[^'"]*)['"]/g, 'DC')];
+    const googleGtmUrls = [...extractCodes(/src=['"]([^'"]*googletagmanager[^'"]*)['"]/g, 'GTM', true)];
+    const googleUaUrls = [...extractCodes(/src=['"]([^'"]*google-analytics[^'"]*)['"]/g, 'UA', true)];
+    const googleAdsUrls = [...extractCodes(/src=['"]([^'"]*googleads[^'"]*)['"]/g, 'Ads', true)];
+    const googleDcUrls = [...extractCodes(/src=['"]([^'"]*doubleclick[^'"]*)['"]/g, 'DC', true)];
 
     // Tüm nitelikleri taramak için bir yardımcı fonksiyon
     const extractFromAttributes = (document, patterns) => {
@@ -25,10 +40,11 @@ const extractTrackingCode = (document) => {
         elements.forEach((element) => {
             Array.from(element.attributes).forEach((attr) => {
                 patterns.forEach((pattern) => {
-                    if (pattern.regex.test(attr.value)) {
+                    const match = attr.value.match(pattern.regex);
+                    if (match) {
                         codes.push({
                             key: pattern.key,
-                            value: attr.value.match(pattern.regex)[0],
+                            value: match[0].replace(/^[^A-Za-z0-9]+/, ''), // Başındaki istenmeyen karakterleri temizle
                         });
                     }
                 });
@@ -39,7 +55,7 @@ const extractTrackingCode = (document) => {
 
     const attrPatterns = [
         { regex: /GTM-[A-Z0-9]+/, key: 'GTM' }, // GTM kodları
-        { regex: /UA-[A-Z0-9]+/, key: 'UA' },   // Universal Analytics
+        { regex: /UA-\d+(-[A-Za-z0-9]+)?/, key: 'UA' }, // Universal Analytics
         { regex: /AW-[A-Z0-9]+/, key: 'Ads' },  // Google Ads
         { regex: /DC-[A-Z0-9]+/, key: 'DC' },   // DoubleClick
     ];
@@ -52,7 +68,11 @@ const extractTrackingCode = (document) => {
         patterns.forEach((pattern) => {
             const matches = [...allText.matchAll(pattern.regex)];
             matches.forEach((match) => {
-                gemiusCodes.push({ key: pattern.key, value: match[1] });
+                let value = match[1]?.trim();
+                if (value) {
+                    value = value.replace(/[^A-Za-z0-9._-]/g, ''); // Kod dışındaki tüm karakterleri temizle
+                    gemiusCodes.push({ key: pattern.key, value });
+                }
             });
         });
         return gemiusCodes;
@@ -66,7 +86,7 @@ const extractTrackingCode = (document) => {
 
     const gemiusCodes = extractGemiusCodes(gemiusPatterns);
 
-    const gemiusUrls = [...extractCodes(/href=['"]([^'"]*gemius[^'"]*)['"]/g, 'gemius')];
+    const gemiusUrls = [...extractCodes(/href=['"]([^'"]*gemius[^'"]*)['"]/g, 'gemius', true)];
 
     return {
         google: {
