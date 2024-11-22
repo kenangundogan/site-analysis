@@ -11,8 +11,9 @@ const startScan = async (params) => {
         throw new Error('URL ve baseUrl parametreleri zorunludur.');
     }
 
+    const startDate = new Date();
+    
     try {
-        const startDate = new Date();
         const report = {
             type: 'urls',
             endpoint: `/scans/${scanId}`,
