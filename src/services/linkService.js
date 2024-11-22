@@ -11,6 +11,7 @@ import headingTagService from './_headingTagService.js';
 import styleTagService from './_styleTagService.js';
 import scriptTagService from './_scriptTagService.js';
 import structuredDataTagService from './_structuredDataTagService.js';
+import trackingCodeService from './_trackingCodeService.js';
 
 const fetchLinkStatusAndUpdateDB = async (link, scanId, options, headerType) => {
     const startTime = new Date();
@@ -123,6 +124,14 @@ const fetchLinkStatusAndUpdateDB = async (link, scanId, options, headerType) => 
             report.push({
                 type: 'structuredDataTag',
                 endpoint: `/scans/${scanId}/links/${updatedLink._id}/structuredDataTag`,
+            });
+        }
+
+        if (options.trackingCode) {
+            await trackingCodeService.processTrackingCode(document, scanId, updatedLink._id);
+            report.push({
+                type: 'trackingCode',
+                endpoint: `/scans/${scanId}/links/${updatedLink._id}/trackingCode`,
             });
         }
 

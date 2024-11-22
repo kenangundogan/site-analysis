@@ -10,6 +10,7 @@ import headingTagController from '../controllers/headingTagController.js';
 import styleTagController from '../controllers/styleTagController.js';
 import scriptTagController from '../controllers/scriptTagController.js';
 import structuredDataTagController from '../controllers/structuredDataTagController.js';
+import trackingCodeController from '../controllers/trackingCodeController.js';
 
 const router = Router();
 
@@ -51,5 +52,8 @@ router.get('/scans/:scanId/links/:linkId/scriptTag', scriptTagController.getScri
 
 // Belirli bir tarama ve link için structured data bilgilerini alma
 router.get('/scans/:scanId/links/:linkId/structuredDataTag', structuredDataTagController.getStructuredDataTagByScanAndLink);
+
+// Belirli bir tarama ve link için tracking code bilgilerini alma
+router.get('/scans/:scanId/links/:linkId/trackingCode', trackingCodeController.getTrackingCodeByScanAndLink);
 
 export default router;
