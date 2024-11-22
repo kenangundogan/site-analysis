@@ -10,17 +10,41 @@ const extractTrackingCode = (document) => {
 
     const googleGtmCode = [...extractCodes(/['"`]GTM-[A-Z0-9]+['"`]/g, 'GTM')];
     const googleUaCode = [...extractCodes(/['"`]UA-[A-Z0-9]+['"`]/g, 'UA')];
-    const googleGaCode = [...extractCodes(/['"`]GA-[A-Z0-9]+['"`]/g, 'GA')];
-    const googleGtagCode = [...extractCodes(/['"`]AW-[A-Z0-9]+['"`]/g, 'Gtag')];
     const googleAdsCode = [...extractCodes(/['"`]AW-[A-Z0-9]+['"`]/g, 'Ads')];
     const googleDcCode = [...extractCodes(/['"`]DC-[A-Z0-9]+['"`]/g, 'DC')];
 
     const googleGtmUrls = [...extractCodes(/src=['"]([^'"]*googletagmanager[^'"]*)['"]/g, 'GTM')];
-    const googleUaUrls = [...extractCodes(/src=['"]([^'"]*google-analytics[^'"]*)['"]/g, 'GA')];
-    const googleGaUrls = [...extractCodes(/src=['"]([^'"]*google-analytics[^'"]*)['"]/g, 'GA')];
-    const googleGtagUrls = [...extractCodes(/src=['"]([^'"]*googletag[^'"]*)['"]/g, 'Gtag')];
+    const googleUaUrls = [...extractCodes(/src=['"]([^'"]*analytics[^'"]*)['"]/g, 'UA')];
     const googleAdsUrls = [...extractCodes(/src=['"]([^'"]*googleads[^'"]*)['"]/g, 'Ads')];
     const googleDcUrls = [...extractCodes(/src=['"]([^'"]*doubleclick[^'"]*)['"]/g, 'DC')];
+
+    // Tüm nitelikleri taramak için bir yardımcı fonksiyon
+    const extractFromAttributes = (document, patterns) => {
+        const codes = [];
+        const elements = document.querySelectorAll('*'); // Tüm HTML elementlerini seç
+        elements.forEach((element) => {
+            Array.from(element.attributes).forEach((attr) => {
+                patterns.forEach((pattern) => {
+                    if (pattern.regex.test(attr.value)) {
+                        codes.push({
+                            key: pattern.key,
+                            value: attr.value.match(pattern.regex)[0],
+                        });
+                    }
+                });
+            });
+        });
+        return codes;
+    };
+
+    const attrPatterns = [
+        { regex: /GTM-[A-Z0-9]+/, key: 'GTM' }, // GTM kodları
+        { regex: /UA-[A-Z0-9]+/, key: 'UA' },   // Universal Analytics
+        { regex: /AW-[A-Z0-9]+/, key: 'Ads' },  // Google Ads
+        { regex: /DC-[A-Z0-9]+/, key: 'DC' },   // DoubleClick
+    ];
+
+    const googleAttrCodes = extractFromAttributes(document, attrPatterns);
 
     // Gemius kodlarını yakalamak için bir yardımcı fonksiyon
     const extractGemiusCodes = (patterns) => {
@@ -46,8 +70,14 @@ const extractTrackingCode = (document) => {
 
     return {
         google: {
-            codes: [...googleGtmCode, ...googleUaCode, ...googleGaCode, ...googleGtagCode, ...googleAdsCode, ...googleDcCode],
-            urls: [...googleGtmUrls, ...googleUaUrls, ...googleGaUrls, ...googleGtagUrls, ...googleAdsUrls, ...googleDcUrls],
+            codes: [
+                ...googleGtmCode,
+                ...googleUaCode,
+                ...googleAdsCode,
+                ...googleDcCode,
+                ...googleAttrCodes, // Tüm attr içlerinden taranan kodlar
+            ],
+            urls: [...googleGtmUrls, ...googleUaUrls, ...googleAdsUrls, ...googleDcUrls],
         },
         gemius: {
             codes: gemiusCodes,
@@ -59,18 +89,11 @@ const extractTrackingCode = (document) => {
 const processTrackingCode = async (document, scanId, linkId) => {
     try {
         const trackingCode = extractTrackingCode(document);
-
-        // Veri yapısını konsolda göster
-        console.log('Tracking Code:', JSON.stringify(trackingCode, null, 2));
-
-        // MongoDB güncelleme işlemi
-        const result = await TrackingCode.findOneAndUpdate(
+        await TrackingCode.findOneAndUpdate(
             { scanId, linkId },
             { attributes: trackingCode },
             { upsert: true, new: true }
         );
-
-        console.log('MongoDB Update Result:', result);
     } catch (error) {
         console.error('Error processing tracking code:', error);
         throw error;
