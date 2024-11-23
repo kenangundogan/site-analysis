@@ -11,6 +11,8 @@ import styleTagController from '../controllers/styleTagController.js';
 import scriptTagController from '../controllers/scriptTagController.js';
 import structuredDataTagController from '../controllers/structuredDataTagController.js';
 import trackingCodeController from '../controllers/trackingCodeController.js';
+import aTagController from '../controllers/aTagController.js';
+import imgTagController from '../controllers/imgTagController.js';
 
 const router = Router();
 
@@ -55,5 +57,11 @@ router.get('/scans/:scanId/links/:linkId/structuredDataTag', structuredDataTagCo
 
 // Belirli bir tarama ve link için tracking code bilgilerini alma
 router.get('/scans/:scanId/links/:linkId/trackingCode', trackingCodeController.getTrackingCodeByScanAndLink);
+
+// Belirli bir tarama ve link için a etiketlerini alma
+router.get('/scans/:scanId/links/:linkId/aTag', aTagController.getATagByScanAndLink);
+
+// Belirli bir tarama ve link için img etiketlerini alma
+router.get('/scans/:scanId/links/:linkId/imgTag', imgTagController.getImgTagByScanAndLink);
 
 export default router;
