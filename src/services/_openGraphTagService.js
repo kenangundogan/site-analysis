@@ -5,9 +5,9 @@ const extractOpenGraphTag = (document) => {
         return meta.getAttribute('property') && meta.getAttribute('property').includes('og:');
     });
 
-    return openGraphTag.map((meta) => {
+    return openGraphTag.map((item) => {
         const attributes = {};
-        for (const attr of meta.attributes) {
+        for (const attr of item.attributes) {
             attributes[attr.name] = attr.value;
         }
         return attributes;

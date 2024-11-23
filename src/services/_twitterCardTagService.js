@@ -5,9 +5,9 @@ const extractTwitterCardTag = (document) => {
         return meta.getAttribute('name') && meta.getAttribute('name').includes('twitter:');
     });
 
-    return twitterCardTag.map((meta) => {
+    return twitterCardTag.map((item) => {
         const attributes = {};
-        for (const attr of meta.attributes) {
+        for (const attr of item.attributes) {
             attributes[attr.name] = attr.value;
         }
         return attributes;
