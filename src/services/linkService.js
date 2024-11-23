@@ -14,6 +14,7 @@ import structuredDataTagService from './_structuredDataTagService.js';
 import trackingCodeService from './_trackingCodeService.js';
 import aTagService from './_aTagService.js';
 import imgTagService from './_imgTagService.js';
+import domDepthService from './_domDepthService.js';
 
 const fetchLinkStatusAndUpdateDB = async (link, scanId, options, headerType) => {
     const startTime = new Date();
@@ -150,6 +151,14 @@ const fetchLinkStatusAndUpdateDB = async (link, scanId, options, headerType) => 
             report.push({
                 type: 'imgTag',
                 endpoint: `/scans/${scanId}/links/${updatedLink._id}/imgTag`,
+            });
+        }
+
+        if (options.domDepth) {
+            await domDepthService.processDomDepth(document, scanId, updatedLink._id);
+            report.push({
+                type: 'domDepth',
+                endpoint: `/scans/${scanId}/links/${updatedLink._id}/domDepth`,
             });
         }
         

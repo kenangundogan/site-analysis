@@ -13,6 +13,7 @@ import structuredDataTagController from '../controllers/structuredDataTagControl
 import trackingCodeController from '../controllers/trackingCodeController.js';
 import aTagController from '../controllers/aTagController.js';
 import imgTagController from '../controllers/imgTagController.js';
+import domDepthController from '../controllers/domDepthController.js';
 
 const router = Router();
 
@@ -63,5 +64,8 @@ router.get('/scans/:scanId/links/:linkId/aTag', aTagController.getATagByScanAndL
 
 // Belirli bir tarama ve link için img etiketlerini alma
 router.get('/scans/:scanId/links/:linkId/imgTag', imgTagController.getImgTagByScanAndLink);
+
+// Belirli bir tarama ve link için dom depth bilgilerini alma
+router.get('/scans/:scanId/links/:linkId/domDepth', domDepthController.getDomDepthByScanAndLink);
 
 export default router;
