@@ -12,6 +12,8 @@ import styleTagService from './_styleTagService.js';
 import scriptTagService from './_scriptTagService.js';
 import structuredDataTagService from './_structuredDataTagService.js';
 import trackingCodeService from './_trackingCodeService.js';
+import aTagService from './_aTagService.js';
+import imgTagService from './_imgTagService.js';
 
 const fetchLinkStatusAndUpdateDB = async (link, scanId, options, headerType) => {
     const startTime = new Date();
@@ -134,6 +136,23 @@ const fetchLinkStatusAndUpdateDB = async (link, scanId, options, headerType) => 
                 endpoint: `/scans/${scanId}/links/${updatedLink._id}/trackingCode`,
             });
         }
+
+        if (options.aTag) {
+            await aTagService.processATag(document, scanId, updatedLink._id);
+            report.push({
+                type: 'aTag',
+                endpoint: `/scans/${scanId}/links/${updatedLink._id}/aTag`,
+            });
+        }
+
+        if (options.imgTag) {
+            await imgTagService.processImgTag(document, scanId, updatedLink._id);
+            report.push({
+                type: 'imgTag',
+                endpoint: `/scans/${scanId}/links/${updatedLink._id}/imgTag`,
+            });
+        }
+        
 
         // Link'i güncelle
         await Link.findByIdAndUpdate(updatedLink._id, {
