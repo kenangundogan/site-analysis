@@ -34,7 +34,14 @@ const startScan = async (req, res, next) => {
             formatResponse({
                 status: 'success',
                 message: 'Tarama işlemi başlatıldı.',
-                data: { scanId: scan._id },
+                data: { 
+                    scanId: scan._id,
+                    endpoint: `/scans/${scan._id}`,
+                    url,
+                    baseUrl,
+                    header,
+                    ...options,
+                },
             })
         );
     } catch (error) {
