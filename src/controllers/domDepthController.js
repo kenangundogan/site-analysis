@@ -12,7 +12,7 @@ const getDomDepthByScanAndLink = async (req, res, next) => {
             return res.status(404).json(
                 formatResponse({
                     status: 'error',
-                    message: 'Twitter Card etiketleri bulunamadı.'
+                    message: 'Dom derinlikleri bulunamadı.'
                 })
             );
         }

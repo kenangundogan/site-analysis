@@ -11,7 +11,7 @@ const getImgTagByScanAndLink = async (req, res, next) => {
             return res.status(404).json(
                 formatResponse({
                     status: 'error',
-                    message: 'Meta etiketleri bulunamadı.'
+                    message: 'Img etiketleri bulunamadı.'
                 })
             );
         }
