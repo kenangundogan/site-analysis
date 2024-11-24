@@ -1,16 +1,19 @@
 import StructuredDataTag from '../models/structuredDataTag.js';
 
 const extractStructuredDataTag = (document) => {
-    const attributes = [];
-    const externalScripts = document.querySelector('script[type="application/ld+json"]');
-    if (externalScripts) {
-        attributes.push({
-            type: 'application/ld+json',
-            content: externalScripts.textContent
-        });
-    }
+    const structuredDataObjects = [];
 
-    return attributes;
+    const structuredDataTags = document.querySelectorAll('script[type="application/ld+json"]');
+    structuredDataTags.forEach((tag) => {
+        try {
+            const structuredDataObject = JSON.parse(tag.innerHTML);
+            structuredDataObjects.push(structuredDataObject);
+        } catch (e) {
+            console.error('Error parsing structured data tag', e);
+        }
+    }
+    );
+    return structuredDataObjects;
 };
 
 const processStructuredDataTag = async (document, scanId, linkId) => {
@@ -19,7 +22,7 @@ const processStructuredDataTag = async (document, scanId, linkId) => {
     if (structuredDataTag.length > 0) {
         await StructuredDataTag.findOneAndUpdate(
             { scanId, linkId },
-            { attributes: structuredDataTag },
+            { contents: structuredDataTag },
             { upsert: true, new: true }
         );
     }

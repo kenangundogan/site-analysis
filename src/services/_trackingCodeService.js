@@ -9,7 +9,7 @@ const processTrackingCode = async (document, scanId, linkId) => {
         await TrackingCode.findOneAndUpdate(
             { scanId, linkId },
             {
-                attributes: {
+                contents: {
                     google: googleTrackingCodes,
                     gemius: gemiusTrackingCodes,
                 }

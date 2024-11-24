@@ -11,7 +11,7 @@ const HeadersSchema = new mongoose.Schema({
         ref: 'Link',
         required: true,
     },
-    headers: {
+    contents: {
         type: Object,
         required: true,
     },

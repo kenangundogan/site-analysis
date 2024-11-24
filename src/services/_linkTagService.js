@@ -18,7 +18,7 @@ const processLinkTag = async (document, scanId, linkId) => {
     if (linkTag.length > 0) {
         await LinkTag.findOneAndUpdate(
             { scanId, linkId },
-            { attributes: linkTag },
+            { contents: linkTag },
             { upsert: true, new: true }
         );
     }

@@ -18,7 +18,7 @@ const processImgTag = async (document, scanId, linkId) => {
     if (imgTag.length > 0) {
         await ImgTag.findOneAndUpdate(
             { scanId, linkId },
-            { attributes: imgTag },
+            { contents: imgTag },
             { upsert: true, new: true }
         );
     }

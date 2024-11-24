@@ -17,7 +17,7 @@ const processHeaders = async (responseHeaders, scanId, linkId) => {
 
     await Headers.findOneAndUpdate(
         { scanId, linkId },
-        { headers: extractedHeaders },
+        { contents: extractedHeaders },
         { upsert: true, new: true }
     );
 };

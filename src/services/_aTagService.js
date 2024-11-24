@@ -18,7 +18,7 @@ const processATag = async (document, scanId, linkId) => {
     if (aTag.length > 0) {
         await ATag.findOneAndUpdate(
             { scanId, linkId },
-            { attributes: aTag },
+            { contents: aTag },
             { upsert: true, new: true }
         );
     }

@@ -1,28 +1,37 @@
 import ScriptTag from '../models/scriptTag.js';
 
 const extractScriptTag = (document) => {
-    const attributes = [];
+    const scriptObjects = [];
 
     // Inline script'leri al
-    const inlineScripts = document.querySelectorAll('script');
-    inlineScripts.forEach((script) => {
-        if (script.innerHTML) {
-            attributes.push({
-                type: 'inline',
-                content: script.innerHTML,
+    const embedded = document.querySelectorAll('script');
+    embedded.forEach((script) => {
+        const scriptContent = script.innerHTML.trim();
+        if (scriptContent) {
+            scriptObjects.push({
+                key: "embedded",
+                type: "text/javascript",
+                value: scriptContent,
+                valueType: "text",
             });
         }
     });
+
     // External script'leri al
     const externalScripts = document.querySelectorAll('script[src]');
     externalScripts.forEach((script) => {
-        attributes.push({
-            type: 'external',
-            src: script.getAttribute('src'),
-        });
+        const scriptSrc = script.getAttribute('src');
+        if (scriptSrc) {
+            scriptObjects.push({
+                key: "external",
+                type: "text/javascript",
+                value: scriptSrc,
+                valueType: "url",
+            });
+        }
     });
 
-    return attributes;
+    return scriptObjects;
 };
 
 const processScriptTag = async (document, scanId, linkId) => {
@@ -31,7 +40,7 @@ const processScriptTag = async (document, scanId, linkId) => {
     if (scriptTag.length > 0) {
         await ScriptTag.findOneAndUpdate(
             { scanId, linkId },
-            { attributes: scriptTag },
+            { contents: scriptTag },
             { upsert: true, new: true }
         );
     }

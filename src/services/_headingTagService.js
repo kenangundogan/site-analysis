@@ -30,7 +30,7 @@ const processHeadingTag = async (document, scanId, linkId) => {
     if (headingTag.length > 0) {
         await HeadingTag.findOneAndUpdate(
             { scanId, linkId },
-            { attributes: headingTag },
+            { contents: headingTag },
             { upsert: true, new: true }
         );
     }

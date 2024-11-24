@@ -20,7 +20,7 @@ const processTwitterCardTag = async (document, scanId, linkId) => {
     if (twitterCardTag.length > 0) {
         await TwitterCardTag.findOneAndUpdate(
             { scanId, linkId },
-            { attributes: twitterCardTag },
+            { contents: twitterCardTag },
             { upsert: true, new: true }
         );
     }

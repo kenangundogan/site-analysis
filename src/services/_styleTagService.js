@@ -1,31 +1,57 @@
 import StyleTag from '../models/styleTag.js';
 
 const extractStyleTag = (document) => {
-    const attributes = [];
+    const styleObjects = [];
 
-    // Inline CSS'leri al
-    const styleTags = document.querySelectorAll('style');
-    if (styleTags) {
-        styleTags.forEach((tag) => {
-            attributes.push({
-                type: 'style',
-                content: tag.innerHTML.trim(),
-            });
+    // tüm tagler içindeki style attribute
+    const inline = document.querySelectorAll('*[style]');
+    if (inline.length > 0) {
+        inline.forEach((tag) => {
+            const styleValue = tag.getAttribute('style').trim();
+            if (styleValue) {
+                styleObjects.push({
+                    key: 'inline',
+                    type: 'text/css',
+                    value: styleValue,
+                    valueType: 'text',
+                });
+            }
         });
     }
 
-    // External CSS'leri al
-    const linkTags = document.querySelectorAll('link[rel="stylesheet"]');
-    if (linkTags) {
-        linkTags.forEach((tag) => {
-            attributes.push({
-                type: 'link',
-                content: tag.href,
-            });
+    // Embeded style tag
+    const embedded = document.querySelectorAll('style');
+    if (embedded.length > 0) {
+        embedded.forEach((tag) => {
+            const styleValue = tag.innerHTML.trim();
+            if (styleValue) {
+                styleObjects.push({
+                    key: 'embedded',
+                    type: 'text/css',
+                    value: styleValue,
+                    valueType: 'text',
+                });
+            }
         });
     }
 
-    return attributes;
+    // External style tag rel="stylesheet" yada type="text/css" yada href varsa
+    const external = document.querySelectorAll('link[rel="stylesheet"], link[type="text/css"]');
+    if (external.length > 0) {
+        external.forEach((tag) => {
+            const styleValue = tag.href.trim();
+            if (styleValue) {
+                styleObjects.push({
+                    key: 'external',
+                    type: 'text/css',
+                    value: styleValue,
+                    valueType: 'url',
+                });
+            }
+        });
+    }
+
+    return styleObjects;
 };
 
 const processStyleTag = async (document, scanId, linkId) => {
@@ -34,7 +60,7 @@ const processStyleTag = async (document, scanId, linkId) => {
     if (styleTag.length > 0) {
         await StyleTag.findOneAndUpdate(
             { scanId, linkId },
-            { attributes: styleTag },
+            { contents: styleTag },
             { upsert: true, new: true }
         );
     }

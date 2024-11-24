@@ -30,7 +30,7 @@ const processDomDepth = async (document, scanId, linkId) => {
     if (domDepthJson) {
         await DomDepth.findOneAndUpdate(
             { scanId, linkId },
-            { attributes: domDepthJson },
+            { contents: domDepthJson },
             { upsert: true, new: true }
         );
     }

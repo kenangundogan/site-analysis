@@ -20,7 +20,7 @@ const processOpenGraphTag = async (document, scanId, linkId) => {
     if (openGraphTag.length > 0) {
         await OpenGraphTag.findOneAndUpdate(
             { scanId, linkId },
-            { attributes: openGraphTag },
+            { contents: openGraphTag },
             { upsert: true, new: true }
         );
     }

@@ -18,7 +18,7 @@ const processMetaTag = async (document, scanId, linkId) => {
     if (metaTag.length > 0) {
         await MetaTag.findOneAndUpdate(
             { scanId, linkId },
-            { attributes: metaTag },
+            { contents: metaTag },
             { upsert: true, new: true }
         );
     }

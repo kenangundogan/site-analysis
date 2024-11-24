@@ -17,195 +17,105 @@ import imgTagService from './_imgTagService.js';
 import domDepthService from './_domDepthService.js';
 import videoTagService from './_videoTagService.js';
 
+// Link'i güncelleme veya oluşturma işlemi için yardımcı fonksiyon
+const updateLink = async (filter, update) => {
+    return Link.findOneAndUpdate(filter, update, { upsert: true, new: true });
+};
+
+// Tek bir seçeneği işleyen yardımcı fonksiyon
+const processOption = async (option, service, document, scanId, linkId, type) => {
+    if (option) {
+        await service(document, scanId, linkId);
+        return { type, endpoint: `/scans/${scanId}/links/${linkId}/${type}` };
+    }
+    return null;
+};
+
+// Ana fonksiyon: Link durumu alınıp veritabanında güncellenir
 const fetchLinkStatusAndUpdateDB = async (link, scanId, options, headerType) => {
     const startTime = new Date();
-
-    // Her link için rastgele bir header seç
     const headerData = getRandomHeader(headerType);
     const headers = headerData.headers;
 
     try {
+        // HTTP isteği gönder
         const response = await axios.get(link.url, {
             headers,
             validateStatus: () => true, // Tüm durum kodlarını başarılı kabul et
-            responseType: 'text', // Yanıtı metin olarak al
+            responseType: 'text', // Yanıt metin olarak alınır
         });
+
+        // Link durum bilgilerini güncelle
         const endTime = new Date();
-
-
-        // Link bilgisini güncelle veya oluştur
-        const linkUpdate = {
-            scanId,
-            date: {
-                start: startTime,
-                end: endTime,
-                duration: (endTime - startTime) / 1000,
-            },
-            status: {
-                code: response.status,
-                message: response.statusText,
-            },
-            responseHeader: headerData,
-        };
-
-        const updatedLink = await Link.findOneAndUpdate(
+        const updatedLink = await updateLink(
             { scanId, url: link.url },
-            linkUpdate,
-            { upsert: true, new: true }
+            {
+                scanId,
+                date: {
+                    start: startTime,
+                    end: endTime,
+                    duration: (endTime - startTime) / 1000,
+                },
+                status: {
+                    code: response.status,
+                    message: response.statusText,
+                },
+                responseHeader: headerData,
+            }
         );
 
-        let report = [];
-        const responseData = response.data;
-        const dom = new JSDOM(responseData);
+        // DOM işlemleri için JSDOM kullanımı
+        const dom = new JSDOM(response.data);
         const document = dom.window.document;
-        
-        if (options.headers) {
-            await headersUtils.processHeaders(response.headers, scanId, updatedLink._id);
-            report.push({
-                type: 'headers',
-                endpoint: `/scans/${scanId}/links/${updatedLink._id}/headers`,
-            });
-        }
 
-        if (options.metaTag) {
-            await metaTagService.processMetaTag(document, scanId, updatedLink._id);
-            report.push({
-                type: 'metaTag',
-                endpoint: `/scans/${scanId}/links/${updatedLink._id}/metaTag`,
-            });
-        }
+        // Paralel işlemleri hazırlıyoruz
+        const tasks = [
+            processOption(options.headers, headersUtils.processHeaders, response.headers, scanId, updatedLink._id, 'headers'),
+            processOption(options.headingTag, headingTagService.processHeadingTag, document, scanId, updatedLink._id, 'headingTag'),
+            processOption(options.linkTag, linkTagService.processLinkTag, document, scanId, updatedLink._id, 'linkTag'),
+            processOption(options.metaTag, metaTagService.processMetaTag, document, scanId, updatedLink._id, 'metaTag'),
+            processOption(options.openGraphTag, openGraphTagService.processOpenGraphTag, document, scanId, updatedLink._id, 'openGraphTag'),
+            processOption(options.twitterCardTag, twitterCardTagService.processTwitterCardTag, document, scanId, updatedLink._id, 'twitterCardTag'),
+            processOption(options.aTag, aTagService.processATag, document, scanId, updatedLink._id, 'aTag'),
+            processOption(options.imgTag, imgTagService.processImgTag, document, scanId, updatedLink._id, 'imgTag'),
+            processOption(options.videoTag, videoTagService.processVideoTag, document, scanId, updatedLink._id, 'videoTag'),
+            processOption(options.domDepth, domDepthService.processDomDepth, document, scanId, updatedLink._id, 'domDepth'),
+            processOption(options.styleTag, styleTagService.processStyleTag, document, scanId, updatedLink._id, 'styleTag'),
+            processOption(options.scriptTag, scriptTagService.processScriptTag, document, scanId, updatedLink._id, 'scriptTag'),
+            processOption(options.structuredDataTag, structuredDataTagService.processStructuredDataTag, document, scanId, updatedLink._id, 'structuredDataTag'),
+            processOption(options.trackingCode, trackingCodeService.processTrackingCode, document, scanId, updatedLink._id, 'trackingCode'),
+        ];
 
-        if (options.linkTag) {
-            await linkTagService.processLinkTag(document, scanId, updatedLink._id);
-            report.push({
-                type: 'linkTag',
-                endpoint: `/scans/${scanId}/links/${updatedLink._id}/linkTag`,
-            });
-        }
+        // Tüm işlemleri paralel olarak çalıştır ve raporu oluştur
+        const report = (await Promise.all(tasks)).filter(Boolean);
 
-        if (options.openGraphTag) {
-            await openGraphTagService.processOpenGraphTag(document, scanId, updatedLink._id);
-            report.push({
-                type: 'openGraphTag',
-                endpoint: `/scans/${scanId}/links/${updatedLink._id}/openGraphTag`,
-            });
-        }
-
-        if (options.twitterCardTag) {
-            await twitterCardTagService.processTwitterCardTag(document, scanId, updatedLink._id);
-            report.push({
-                type: 'twitterCardTag',
-                endpoint: `/scans/${scanId}/links/${updatedLink._id}/twitterCardTag`,
-            });
-        }
-
-        if (options.headingTag) {
-            await headingTagService.processHeadingTag(document, scanId, updatedLink._id);
-            report.push({
-                type: 'headingTag',
-                endpoint: `/scans/${scanId}/links/${updatedLink._id}/headingTag`,
-            });
-        }
-
-        if (options.styleTag) {
-            await styleTagService.processStyleTag(document, scanId, updatedLink._id);
-            report.push({
-                type: 'styleTag',
-                endpoint: `/scans/${scanId}/links/${updatedLink._id}/styleTag`,
-            });
-        }
-
-        if (options.scriptTag) {
-            await scriptTagService.processScriptTag(document, scanId, updatedLink._id);
-            report.push({
-                type: 'scriptTag',
-                endpoint: `/scans/${scanId}/links/${updatedLink._id}/scriptTag`,
-            });
-        }
-
-        if (options.structuredDataTag) {
-            await structuredDataTagService.processStructuredDataTag(document, scanId, updatedLink._id);
-            report.push({
-                type: 'structuredDataTag',
-                endpoint: `/scans/${scanId}/links/${updatedLink._id}/structuredDataTag`,
-            });
-        }
-
-        if (options.trackingCode) {
-            await trackingCodeService.processTrackingCode(document, scanId, updatedLink._id);
-            report.push({
-                type: 'trackingCode',
-                endpoint: `/scans/${scanId}/links/${updatedLink._id}/trackingCode`,
-            });
-        }
-
-        if (options.aTag) {
-            await aTagService.processATag(document, scanId, updatedLink._id);
-            report.push({
-                type: 'aTag',
-                endpoint: `/scans/${scanId}/links/${updatedLink._id}/aTag`,
-            });
-        }
-
-        if (options.imgTag) {
-            await imgTagService.processImgTag(document, scanId, updatedLink._id);
-            report.push({
-                type: 'imgTag',
-                endpoint: `/scans/${scanId}/links/${updatedLink._id}/imgTag`,
-            });
-        }
-
-        if (options.domDepth) {
-            await domDepthService.processDomDepth(document, scanId, updatedLink._id);
-            report.push({
-                type: 'domDepth',
-                endpoint: `/scans/${scanId}/links/${updatedLink._id}/domDepth`,
-            });
-        }
-
-        if (options.videoTag) {
-            await videoTagService.processVideoTag(document, scanId, updatedLink._id);
-            report.push({
-                type: 'videoTag',
-                endpoint: `/scans/${scanId}/links/${updatedLink._id}/videoTag`,
-            });
-        }
-        
-
-        // Link'i güncelle
-        await Link.findByIdAndUpdate(updatedLink._id, {
-            report,
-        });
-
+        // Güncellenen raporu veritabanına kaydet
+        await Link.findByIdAndUpdate(updatedLink._id, { report });
     } catch (error) {
         const endTime = new Date();
-
-        // Hata durumunda da status code'u almaya çalışalım
         const statusCode = error.response ? error.response.status : 500;
         const statusMessage = error.response ? error.response.statusText : error.message;
 
-        // Link bilgisini güncelle veya oluştur
-        const linkUpdate = {
-            scanId,
-            date: {
-                start: startTime,
-                end: endTime,
-                duration: (endTime - startTime) / 1000,
-            },
-            status: {
-                code: statusCode,
-                message: statusMessage,
-            },
-            responseHeader: headerData
-        };
-
-        await Link.findOneAndUpdate(
+        // Hata durumunda da link bilgisini güncelle
+        await updateLink(
             { scanId, url: link.url },
-            linkUpdate,
-            { upsert: true, new: true }
+            {
+                scanId,
+                date: {
+                    start: startTime,
+                    end: endTime,
+                    duration: (endTime - startTime) / 1000,
+                },
+                status: {
+                    code: statusCode,
+                    message: statusMessage,
+                },
+                responseHeader: headerData,
+            }
         );
 
-        // Hata oluştuğu için diğer işlemler yapılmayacak
+        // Hata loglama
+        console.error(`Error processing link ${link.url}:`, error.message);
     }
 };
 

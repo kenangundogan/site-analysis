@@ -37,7 +37,7 @@ const processVideoTag = async (document, scanId, linkId) => {
     if (videoTag.length > 0) {
         await VideoTag.findOneAndUpdate(
             { scanId, linkId },
-            { attributes: videoTag },
+            { contents: videoTag },
             { upsert: true, new: true }
         );
     }

@@ -12,7 +12,7 @@ const ATagSchema = new mongoose.Schema({
         required: true,
         unique: true,
     },
-    attributes: {
+    contents: {
         type: Object,
         required: true,
     },
