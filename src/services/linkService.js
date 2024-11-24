@@ -23,10 +23,15 @@ const updateLink = async (filter, update) => {
 };
 
 // Tek bir seçeneği işleyen yardımcı fonksiyon
-const processOption = async (option, service, document, scanId, linkId, type) => {
+const processOption = async (option, service, document, scanId, linkId, type, linkUrl) => {
     if (option) {
-        await service(document, scanId, linkId);
-        return { type, endpoint: `/scans/${scanId}/links/${linkId}/${type}` };
+        try {
+            await service(document, scanId, linkId);
+            return { type, endpoint: `/scans/${scanId}/links/${linkId}/${type}` };
+        } catch (e) {
+            console.error(`Error processing ${type} for link ${linkUrl}:`, e.message);
+            return null;
+        }
     }
     return null;
 };
@@ -70,20 +75,20 @@ const fetchLinkStatusAndUpdateDB = async (link, scanId, options, headerType) => 
 
         // Paralel işlemleri hazırlıyoruz
         const tasks = [
-            processOption(options.headers, headersUtils.processHeaders, response.headers, scanId, updatedLink._id, 'headers'),
-            processOption(options.headingTag, headingTagService.processHeadingTag, document, scanId, updatedLink._id, 'headingTag'),
-            processOption(options.linkTag, linkTagService.processLinkTag, document, scanId, updatedLink._id, 'linkTag'),
-            processOption(options.metaTag, metaTagService.processMetaTag, document, scanId, updatedLink._id, 'metaTag'),
-            processOption(options.openGraphTag, openGraphTagService.processOpenGraphTag, document, scanId, updatedLink._id, 'openGraphTag'),
-            processOption(options.twitterCardTag, twitterCardTagService.processTwitterCardTag, document, scanId, updatedLink._id, 'twitterCardTag'),
-            processOption(options.aTag, aTagService.processATag, document, scanId, updatedLink._id, 'aTag'),
-            processOption(options.imgTag, imgTagService.processImgTag, document, scanId, updatedLink._id, 'imgTag'),
-            processOption(options.videoTag, videoTagService.processVideoTag, document, scanId, updatedLink._id, 'videoTag'),
-            processOption(options.domDepth, domDepthService.processDomDepth, document, scanId, updatedLink._id, 'domDepth'),
-            processOption(options.styleTag, styleTagService.processStyleTag, document, scanId, updatedLink._id, 'styleTag'),
-            processOption(options.scriptTag, scriptTagService.processScriptTag, document, scanId, updatedLink._id, 'scriptTag'),
-            processOption(options.structuredDataTag, structuredDataTagService.processStructuredDataTag, document, scanId, updatedLink._id, 'structuredDataTag'),
-            processOption(options.trackingCode, trackingCodeService.processTrackingCode, document, scanId, updatedLink._id, 'trackingCode'),
+            processOption(options.headers, headersUtils.processHeaders, response.headers, scanId, updatedLink._id, 'headers', link.url),
+            processOption(options.headingTag, headingTagService.processHeadingTag, document, scanId, updatedLink._id, 'headingTag', link.url),
+            processOption(options.linkTag, linkTagService.processLinkTag, document, scanId, updatedLink._id, 'linkTag', link.url),
+            processOption(options.metaTag, metaTagService.processMetaTag, document, scanId, updatedLink._id, 'metaTag', link.url),
+            processOption(options.openGraphTag, openGraphTagService.processOpenGraphTag, document, scanId, updatedLink._id, 'openGraphTag', link.url),
+            processOption(options.twitterCardTag, twitterCardTagService.processTwitterCardTag, document, scanId, updatedLink._id, 'twitterCardTag', link.url),
+            processOption(options.aTag, aTagService.processATag, document, scanId, updatedLink._id, 'aTag', link.url),
+            processOption(options.imgTag, imgTagService.processImgTag, document, scanId, updatedLink._id, 'imgTag', link.url),
+            processOption(options.videoTag, videoTagService.processVideoTag, document, scanId, updatedLink._id, 'videoTag', link.url),
+            processOption(options.domDepth, domDepthService.processDomDepth, document, scanId, updatedLink._id, 'domDepth', link.url),
+            processOption(options.styleTag, styleTagService.processStyleTag, document, scanId, updatedLink._id, 'styleTag', link.url),
+            processOption(options.scriptTag, scriptTagService.processScriptTag, document, scanId, updatedLink._id, 'scriptTag', link.url),
+            processOption(options.structuredDataTag, structuredDataTagService.processStructuredDataTag, document, scanId, updatedLink._id, 'structuredDataTag', link.url),
+            processOption(options.trackingCode, trackingCodeService.processTrackingCode, document, scanId, updatedLink._id, 'trackingCode', link.url),
         ];
 
         // Tüm işlemleri paralel olarak çalıştır ve raporu oluştur
