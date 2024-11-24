@@ -15,6 +15,7 @@ import trackingCodeService from './_trackingCodeService.js';
 import aTagService from './_aTagService.js';
 import imgTagService from './_imgTagService.js';
 import domDepthService from './_domDepthService.js';
+import videoTagService from './_videoTagService.js';
 
 const fetchLinkStatusAndUpdateDB = async (link, scanId, options, headerType) => {
     const startTime = new Date();
@@ -161,6 +162,14 @@ const fetchLinkStatusAndUpdateDB = async (link, scanId, options, headerType) => 
                 endpoint: `/scans/${scanId}/links/${updatedLink._id}/domDepth`,
             });
         }
+
+        if (options.videoTag) {
+            await videoTagService.processVideoTag(document, scanId, updatedLink._id);
+            report.push({
+                type: 'videoTag',
+                endpoint: `/scans/${scanId}/links/${updatedLink._id}/videoTag`,
+            });
+        }
         
 
         // Link'i güncelle
@@ -173,7 +182,7 @@ const fetchLinkStatusAndUpdateDB = async (link, scanId, options, headerType) => 
 
         // Hata durumunda da status code'u almaya çalışalım
         const statusCode = error.response ? error.response.status : 500;
-        const statusMessage = error.message ? error.message : error.message;
+        const statusMessage = error.response ? error.response.statusText : error.message;
 
         // Link bilgisini güncelle veya oluştur
         const linkUpdate = {
