@@ -6,10 +6,12 @@ const connectDB = async () => {
 
     try {
         await mongoose.connect(mongoURI);
-        console.log(`MongoDB ${MONGO_HOST}:${MONGO_PORT} üzerinde çalışıyor.`);
+        console.log(`Veritabanı bağlantısı başarılı: MongoDB ${MONGO_HOST}:${MONGO_PORT}/${MONGO_DB}`);
+
     } catch (error) {
-        console.error('MongoDB bağlantı hatası:', error.message);
-        process.exit(1);    
+        console.error(`Veritabanı bağlantısı başarısız: MongoDB ${MONGO_HOST}:${MONGO_PORT}/${MONGO_DB}`);
+        console.error(`Hata: ${error.message}`);
+        process.exit(1);
     }
 };
 

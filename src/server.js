@@ -4,10 +4,8 @@ import connectDB from './config/database.js';
 
 const { serverPort, serverUrl } = config;
 
-// Veritabanına bağlan
 connectDB();
 
 app.listen(serverPort, serverUrl, () => {
-  console.log(`Sunucu ${config.serverPort} üzerinde çalışıyor.`);
-  console.log(`Sunucu URL'si: ${config.serverUrl}`);
+  console.log(`Sunucu başarıyla başlatıldı: Express ${serverUrl}:${serverPort}`);
 });
