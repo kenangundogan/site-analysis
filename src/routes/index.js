@@ -1,8 +1,8 @@
 import { Router } from 'express';
 import scanController from '../controllers/scanController.js';
 import apiController from '../controllers/apiController.js';
-import metaTagController from '../controllers/metaTagController.js'; 
-import headersController from '../controllers/headersController.js'; 
+import metaTagController from '../controllers/metaTagController.js';
+import headersController from '../controllers/headersController.js';
 import linkTagController from '../controllers/linkTagController.js';
 import openGraphTagController from '../controllers/openGraphTagController.js';
 import twitterCardTagController from '../controllers/twitterCardTagController.js';
@@ -15,6 +15,7 @@ import aTagController from '../controllers/aTagController.js';
 import imgTagController from '../controllers/imgTagController.js';
 import domDepthController from '../controllers/domDepthController.js';
 import videoTagController from '../controllers/videoTagController.js';
+import linkController from '../controllers/linkController.js';
 
 const router = Router();
 
@@ -71,5 +72,8 @@ router.get('/scans/:scanId/links/:linkId/domDepth', domDepthController.getDomDep
 
 // Belirli bir tarama ve link için video etiketlerini alma
 router.get('/scans/:scanId/links/:linkId/videoTag', videoTagController.getVideoTagByScanAndLink);
+
+// Belirli bir URL ile eşleşen tüm linkleri alma
+router.get('/links', linkController.getLinksByUrl);
 
 export default router;
