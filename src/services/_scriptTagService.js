@@ -1,4 +1,5 @@
 import ScriptTag from '../models/scriptTag.js';
+import cleanText from '../utils/cleanText.js';
 
 const extractScriptTag = (document) => {
     const scriptObjects = [];
@@ -11,7 +12,7 @@ const extractScriptTag = (document) => {
             scriptObjects.push({
                 key: "embedded",
                 type: "text/javascript",
-                value: scriptContent,
+                value: cleanText(scriptContent),
                 valueType: "text",
             });
         }
@@ -25,7 +26,7 @@ const extractScriptTag = (document) => {
             scriptObjects.push({
                 key: "external",
                 type: "text/javascript",
-                value: scriptSrc,
+                value: cleanText(scriptSrc),
                 valueType: "url",
             });
         }

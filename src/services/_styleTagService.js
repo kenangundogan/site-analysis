@@ -1,4 +1,5 @@
 import StyleTag from '../models/styleTag.js';
+import cleanText from '../utils/cleanText.js';
 
 const extractStyleTag = (document) => {
     const styleObjects = [];
@@ -12,7 +13,7 @@ const extractStyleTag = (document) => {
                 styleObjects.push({
                     key: 'inline',
                     type: 'text/css',
-                    value: styleValue,
+                    value: cleanText(styleValue),
                     valueType: 'text',
                 });
             }
@@ -28,7 +29,7 @@ const extractStyleTag = (document) => {
                 styleObjects.push({
                     key: 'embedded',
                     type: 'text/css',
-                    value: styleValue,
+                    value: cleanText(styleValue),
                     valueType: 'text',
                 });
             }
@@ -44,7 +45,7 @@ const extractStyleTag = (document) => {
                 styleObjects.push({
                     key: 'external',
                     type: 'text/css',
-                    value: styleValue,
+                    value: cleanText(styleValue),
                     valueType: 'url',
                 });
             }

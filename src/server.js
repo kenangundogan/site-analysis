@@ -7,5 +7,5 @@ const { serverPort, serverUrl } = config;
 connectDB();
 
 app.listen(serverPort, serverUrl, () => {
-  console.log(`Sunucu başarıyla başlatıldı: Express ${serverUrl}:${serverPort}`);
+    console.log(`Sunucu başarıyla başlatıldı: Express ${serverUrl}:${serverPort}`);
 });
