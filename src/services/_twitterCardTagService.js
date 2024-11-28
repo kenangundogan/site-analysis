@@ -18,13 +18,11 @@ const extractTwitterCardTag = (document) => {
 const processTwitterCardTag = async (document, scanId, linkId) => {
     const twitterCardTag = extractTwitterCardTag(document);
 
-    if (twitterCardTag.length > 0) {
-        await TwitterCardTag.findOneAndUpdate(
-            { scanId, linkId },
-            { contents: twitterCardTag },
-            { upsert: true, new: true }
-        );
-    }
+    await TwitterCardTag.findOneAndUpdate(
+        { scanId, linkId },
+        { contents: twitterCardTag.length > 0 ? twitterCardTag : null },
+        { upsert: true, new: true }
+    );
 };
 
 export default {

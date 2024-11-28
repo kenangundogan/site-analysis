@@ -38,13 +38,11 @@ const extractScriptTag = (document) => {
 const processScriptTag = async (document, scanId, linkId) => {
     const scriptTag = extractScriptTag(document);
 
-    if (scriptTag.length > 0) {
-        await ScriptTag.findOneAndUpdate(
-            { scanId, linkId },
-            { contents: scriptTag },
-            { upsert: true, new: true }
-        );
-    }
+    await ScriptTag.findOneAndUpdate(
+        { scanId, linkId },
+        { contents: scriptTag.length > 0 ? scriptTag : null },
+        { upsert: true, new: true }
+    );
 };
 
 export default {

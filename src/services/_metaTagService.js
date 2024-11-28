@@ -16,13 +16,11 @@ const extractMetaTag = (document) => {
 const processMetaTag = async (document, scanId, linkId) => {
     const metaTag = extractMetaTag(document);
 
-    if (metaTag.length > 0) {
-        await MetaTag.findOneAndUpdate(
-            { scanId, linkId },
-            { contents: metaTag },
-            { upsert: true, new: true }
-        );
-    }
+    await MetaTag.findOneAndUpdate(
+        { scanId, linkId },
+        { contents: metaTag.length > 0 ? metaTag : null },
+        { upsert: true, new: true }
+    );
 };
 
 export default {

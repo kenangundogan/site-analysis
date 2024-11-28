@@ -22,13 +22,11 @@ const extractHeadingTag = (document) => {
 const processHeadingTag = async (document, scanId, linkId) => {
     const headingTag = extractHeadingTag(document);
 
-    if (headingTag.length > 0) {
-        await HeadingTag.findOneAndUpdate(
-            { scanId, linkId },
-            { contents: headingTag },
-            { upsert: true, new: true }
-        );
-    }
+    await HeadingTag.findOneAndUpdate(
+        { scanId, linkId },
+        { contents: headingTag.length > 0 ? headingTag : null },
+        { upsert: true, new: true }
+    );
 };
 
 export default {

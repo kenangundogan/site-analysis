@@ -16,13 +16,11 @@ const extractImgTag = (document) => {
 const processImgTag = async (document, scanId, linkId) => {
     const imgTag = extractImgTag(document);
 
-    if (imgTag.length > 0) {
-        await ImgTag.findOneAndUpdate(
-            { scanId, linkId },
-            { contents: imgTag },
-            { upsert: true, new: true }
-        );
-    }
+    await ImgTag.findOneAndUpdate(
+        { scanId, linkId },
+        { contents: imgTag.length > 0 ? imgTag : null },
+        { upsert: true, new: true }
+    );
 };
 
 export default {

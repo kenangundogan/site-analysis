@@ -35,13 +35,11 @@ const extractVideoTag = (document) => {
 const processVideoTag = async (document, scanId, linkId) => {
     const videoTag = extractVideoTag(document);
 
-    if (videoTag.length > 0) {
-        await VideoTag.findOneAndUpdate(
-            { scanId, linkId },
-            { contents: videoTag },
-            { upsert: true, new: true }
-        );
-    }
+    await VideoTag.findOneAndUpdate(
+        { scanId, linkId },
+        { contents: videoTag.length > 0 ? videoTag : null },
+        { upsert: true, new: true }
+    );
 };
 
 export default {

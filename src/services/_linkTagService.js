@@ -16,13 +16,11 @@ const extractLinkTag = (document) => {
 const processLinkTag = async (document, scanId, linkId) => {
     const linkTag = extractLinkTag(document);
 
-    if (linkTag.length > 0) {
-        await LinkTag.findOneAndUpdate(
-            { scanId, linkId },
-            { contents: linkTag },
-            { upsert: true, new: true }
-        );
-    }
+    await LinkTag.findOneAndUpdate(
+        { scanId, linkId },
+        { contents: linkTag.length > 0 ? linkTag : null },
+        { upsert: true, new: true }
+    );
 };
 
 export default {

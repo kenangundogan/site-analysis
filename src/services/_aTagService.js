@@ -16,13 +16,11 @@ const extractATag = (document) => {
 const processATag = async (document, scanId, linkId) => {
     const aTag = extractATag(document);
 
-    if (aTag.length > 0) {
-        await ATag.findOneAndUpdate(
-            { scanId, linkId },
-            { contents: aTag },
-            { upsert: true, new: true }
-        );
-    }
+    await ATag.findOneAndUpdate(
+        { scanId, linkId },
+        { contents: aTag.length > 0 ? aTag : null },
+        { upsert: true, new: true }
+    );
 };
 
 export default {

@@ -21,13 +21,11 @@ const extractStructuredDataTag = (document) => {
 const processStructuredDataTag = async (document, scanId, linkId) => {
     const structuredDataTag = extractStructuredDataTag(document);
 
-    if (structuredDataTag.length > 0) {
-        await StructuredDataTag.findOneAndUpdate(
-            { scanId, linkId },
-            { contents: structuredDataTag },
-            { upsert: true, new: true }
-        );
-    }
+    await StructuredDataTag.findOneAndUpdate(
+        { scanId, linkId },
+        { contents: structuredDataTag.length > 0 ? structuredDataTag : null },
+        { upsert: true, new: true }
+    );
 };
 
 export default {

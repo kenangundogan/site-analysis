@@ -58,13 +58,11 @@ const extractStyleTag = (document) => {
 const processStyleTag = async (document, scanId, linkId) => {
     const styleTag = extractStyleTag(document);
 
-    if (styleTag.length > 0) {
-        await StyleTag.findOneAndUpdate(
-            { scanId, linkId },
-            { contents: styleTag },
-            { upsert: true, new: true }
-        );
-    }
+    await StyleTag.findOneAndUpdate(
+        { scanId, linkId },
+        { contents: styleTag.length > 0 ? styleTag : null },
+        { upsert: true, new: true }
+    );
 };
 
 export default {

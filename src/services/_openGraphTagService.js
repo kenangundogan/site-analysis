@@ -18,13 +18,11 @@ const extractOpenGraphTag = (document) => {
 const processOpenGraphTag = async (document, scanId, linkId) => {
     const openGraphTag = extractOpenGraphTag(document);
 
-    if (openGraphTag.length > 0) {
-        await OpenGraphTag.findOneAndUpdate(
-            { scanId, linkId },
-            { contents: openGraphTag },
-            { upsert: true, new: true }
-        );
-    }
+    await OpenGraphTag.findOneAndUpdate(
+        { scanId, linkId },
+        { contents: openGraphTag.length > 0 ? openGraphTag : null },
+        { upsert: true, new: true }
+    );
 };
 
 export default {
