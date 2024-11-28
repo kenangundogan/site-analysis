@@ -1,4 +1,5 @@
 import ATag from '../models/aTag.js';
+import cleanText from '../utils/cleanText.js';
 
 const extractATag = (document) => {
     const aTag = Array.from(document.getElementsByTagName('a'));
@@ -6,7 +7,7 @@ const extractATag = (document) => {
     return aTag.map((item) => {
         const attributes = {};
         for (const attr of item.attributes) {
-            attributes[attr.name] = attr.value;
+            attributes[attr.name] = cleanText(attr.value.trim());
         }
         return attributes;
     });

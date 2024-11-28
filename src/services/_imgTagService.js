@@ -1,4 +1,5 @@
 import ImgTag from '../models/imgTag.js';
+import cleanText from '../utils/cleanText.js';
 
 const extractImgTag = (document) => {
     const imgTag = Array.from(document.getElementsByTagName('img'));
@@ -6,7 +7,7 @@ const extractImgTag = (document) => {
     return imgTag.map((item) => {
         const attributes = {};
         for (const attr of item.attributes) {
-            attributes[attr.name] = attr.value;
+            attributes[attr.name] = cleanText(attr.value.trim());
         }
         return attributes;
     });

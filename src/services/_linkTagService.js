@@ -1,4 +1,5 @@
 import LinkTag from '../models/linkTag.js';
+import cleanText from '../utils/cleanText.js';
 
 const extractLinkTag = (document) => {
     const linkTag = Array.from(document.getElementsByTagName('link'));
@@ -6,7 +7,7 @@ const extractLinkTag = (document) => {
     return linkTag.map((link) => {
         const attributes = {};
         for (const attr of link.attributes) {
-            attributes[attr.name] = attr.value;
+            attributes[attr.name] = cleanText(attr.value.trim());
         }
         return attributes;
     });

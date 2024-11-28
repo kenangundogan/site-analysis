@@ -1,9 +1,5 @@
 import HeadingTag from '../models/headingTag.js';
-
-// Geçersiz UTF-8 karakterlerini temizlemek için bir fonksiyon
-const cleanText = (text) => {
-    return text.replace(/[^\x00-\x7F]/g, ""); // Geçersiz karakterleri kaldır
-};
+import cleanText from '../utils/cleanText.js';
 
 const extractHeadingTag = (document) => {
     const headingTag = document.querySelectorAll('h1, h2, h3, h4, h5, h6');
@@ -12,13 +8,12 @@ const extractHeadingTag = (document) => {
     headingTag.forEach((tag) => {
         const tagAttributes = {
             tag: tag.tagName,
-            text: cleanText(tag.textContent.trim()), // Metni temizle ve boşlukları kırp
+            text: cleanText(tag.textContent.trim()),
         };
 
         headingTagAttributes.push(tagAttributes);
     });
 
-    // h tag'lerini isim sırasına göre sıralama
     headingTagAttributes.sort((a, b) => a.tag.localeCompare(b.tag));
 
     return headingTagAttributes;

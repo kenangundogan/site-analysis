@@ -1,4 +1,5 @@
 import OpenGraphTag from '../models/openGraphTag.js';
+import cleanText from '../utils/cleanText.js';
 
 const extractOpenGraphTag = (document) => {
     const openGraphTag = Array.from(document.getElementsByTagName('meta')).filter((meta) => {
@@ -8,7 +9,7 @@ const extractOpenGraphTag = (document) => {
     return openGraphTag.map((item) => {
         const attributes = {};
         for (const attr of item.attributes) {
-            attributes[attr.name] = attr.value;
+            attributes[attr.name] = cleanText(attr.value.trim());
         }
         return attributes;
     });

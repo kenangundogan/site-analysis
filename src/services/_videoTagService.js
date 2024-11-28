@@ -1,4 +1,5 @@
 import VideoTag from '../models/videoTag.js';
+import cleanText from '../utils/cleanText.js';
 
 const extractVideoTag = (document) => {
     const attributes = [];
@@ -12,7 +13,7 @@ const extractVideoTag = (document) => {
     embededVideoTag.map((video) => {
         const attribute = {};
         for (const attr of video.attributes) {
-            attribute[attr.name] = attr.value;
+            attribute[attr.name] = cleanText(attr.value.trim());
         }
         attributes.push(attribute);
     });
@@ -22,7 +23,7 @@ const extractVideoTag = (document) => {
     videoTag.map((video) => {
         const attribute = {};
         for (const attr of video.attributes) {
-            attribute[attr.name] = attr.value;
+            attribute[attr.name] = cleanText(attr.value.trim());
         }
         attributes.push(attribute);
     });

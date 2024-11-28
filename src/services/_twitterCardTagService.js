@@ -1,4 +1,5 @@
 import TwitterCardTag from '../models/twitterCardTag.js';
+import cleanText from '../utils/cleanText.js';
 
 const extractTwitterCardTag = (document) => {
     const twitterCardTag = Array.from(document.getElementsByTagName('meta')).filter((meta) => {
@@ -8,7 +9,7 @@ const extractTwitterCardTag = (document) => {
     return twitterCardTag.map((item) => {
         const attributes = {};
         for (const attr of item.attributes) {
-            attributes[attr.name] = attr.value;
+            attributes[attr.name] = cleanText(attr.value.trim());
         }
         return attributes;
     });
